@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : SPI.h
+  * File Name          : CRC.h
   * Description        : This file provides code for the configuration
-  *                      of the SPI instances.
+  *                      of the CRC instances.
   ******************************************************************************
   *
   * Copyright (c) 2017 STMicroelectronics International N.V. 
@@ -42,8 +42,8 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __spi_H
-#define __spi_H
+#ifndef __crc_H
+#define __crc_H
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -56,8 +56,7 @@
 
 /* USER CODE END Includes */
 
-extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
+extern CRC_HandleTypeDef hcrc;
 
 /* USER CODE BEGIN Private defines */
 
@@ -65,8 +64,7 @@ extern SPI_HandleTypeDef hspi2;
 
 extern void Error_Handler(void);
 
-void MX_SPI1_Init(void);
-void MX_SPI2_Init(void);
+void MX_CRC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -75,7 +73,7 @@ void MX_SPI2_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ spi_H */
+#endif /*__ crc_H */
 
 /**
   * @}

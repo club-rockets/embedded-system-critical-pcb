@@ -27,7 +27,14 @@
 /******************************************************************************/
 typedef struct Telemetry_s {
   uint32_t Telemetry_ID;
-
+  float Barometer_Temperature;
+  float Barometer_Pressure;
+  float Barometer_Altitude;
+  float Barometer_AGL_Altitude;
+  float Mission_Time;
+  float Estimated_AGL_Altitude;
+  float Estimated_Velocity;
+  float Estimated_Acceleration;
 
   uint32_t isInitialized;
 
