@@ -1,0 +1,201 @@
+
+typedef struct
+{
+  __IO uint32_t CR1;        /*!< SPI control register 1 (not used in I2S mode),      Address offset: 0x00 */
+  __IO uint32_t CR2;        /*!< SPI control register 2,                             Address offset: 0x04 */
+  
+  __IO uint32_t SR;         /*!< SPI status register,                                Address offset: 0x08 */
+  
+  __IO uint32_t DR;         /*!< SPI data register,                                  Address offset: 0x0C *///nothing to do wih tyhiskazdfphnz`djfgkbhnal`dfgkz
+  
+  
+  
+  __IO uint32_t CRCPR;      /*!< SPI CRC polynomial register (not used in I2S mode), Address offset: 0x10 *///offline due to cinfiguration
+  
+  __IO uint32_t RXCRCR;     /*!< SPI RX CRC register (not used in I2S mode),         Address offset: 0x14 *///same
+  __IO uint32_t TXCRCR;     /*!< SPI TX CRC register (not used in I2S mode),         Address offset: 0x18 *///same
+  
+  
+  __IO uint32_t I2SCFGR;    /*!< SPI_I2S configuration register,                     Address offset: 0x1C */
+  __IO uint32_t I2SPR;      /*!< SPI_I2S prescaler register,                         Address offset: 0x20 */
+} SPI_TypeDef;
+
+
+/*
+874
+
+//cr1 et cr2 config baud rate du  SCK/clock //voir page 910-911 pour vitesse de clock
+bitr 5:3
+de SPI_CR1
+
+
+bit[15]
+//2-line unidirectional data=0
+//mode 2x unidirectional = 0
+//mode 1x bidirectional = 1
+
+bit[14]
+//BIDIOE=0
+//output disabled in bidirectional = 0
+//output enabled in bidirecctional = 1
+
+bit[13]
+//CRCEN=0
+//CRC calculation disable = 0
+//CRC calculation enabled =1
+
+
+bit[12]
+//crcnext=0
+//Data  phase=0
+//next transfer is crc=1
+
+bit[11]
+//DFF=0
+//size of trame
+//0=8 bit et 1= 16bit
+
+bit[10]
+//RXONLY=0
+//full duplex =0
+//received only=1
+
+
+bit[9]
+//SSM=0
+//software slave management disabled = 0
+
+bit[8]
+//SSI=w/e
+//managed by ssm
+
+bit[7]
+MSB first donc =0
+
+bit[6]
+//SPI enable=1
+
+bit[5:3]
+///001
+//Fpclk/2^a(ou a est un multiple de 2)#
+//a verifier selon la vitesse du peripherique connecter
+
+bit[2]
+//MSTR=1
+
+bit[1]
+//cpol=1
+
+bit[0]
+//cpha=0
+
+
+
+SPI control register 2 (SPI_CR2)
+bit[15]
+//reserved
+
+bit[14]
+//reserved
+
+bit[13]
+//reserved
+
+bit[12]
+//reserved
+
+bit[11]
+//reserved
+
+bit[10]
+//reserved
+
+bit[9]
+//reserved
+
+bit[8]
+//reserved
+
+bit[7]
+//TXEIE=1
+//TXE = 0 TX-Empty interrupt masked 
+//TXE = 1 TX-Empty interrupt not masked
+
+bit[6]
+//RXNEIE=1
+//0 = RxNE Interrupt masked
+//1 = RxNE Interrupt not masked
+
+bit[5]
+//EERIE=1
+//0:Error Interrupt is masked
+//1:Error Interrupt is enabled
+
+bit[4]
+//FRF=1
+//SPI Motorola mode = 0
+//SPI TI mode =1
+
+bit[3]
+//reserved
+
+bit[2]
+//SSOE=0
+//SSOE=0 : SS output disable
+//SSOE=1 : SS output is enable in multi-master mode
+
+bit[1]
+//TXDMAEN=0
+//TX buffer DMA= 0 disabled
+//TX Buffer DMA= 1 enabled
+
+bit[0]
+//RXDMAEN=0
+//RX buffer DMA= 0 disabled
+//RX Buffer DMA= 1 enabled
+
+
+
+
+
+ I2SCFGR;
+ bit[15:12] Reserved, must be kept at reset value
+	
+ bit[11] 
+ //I2SMOD=0
+ //SPI=0
+ //I2S=1
+ 
+ bit[10]
+ //I2SE=0 but not used in SPI mode
+ 
+bit[9:8]
+//I2SCFG=NOT USED
+
+bit[7]
+//PCMSYNC=Not USED
+
+bit[6]
+//reserved
+
+bit[5:4]
+//I2SSTD=Not used
+
+bit[3]
+//SKPOL=Not used
+
+bit[2:1]
+//DATLEN = Not Used
+
+bit[0]
+CHLEN=NotUsed
+
+
+ 
+I2SPR; not used beacuse SPI
+ 
+ 
+ 
+ 
+ 
+ 

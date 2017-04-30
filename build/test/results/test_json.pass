@@ -1,0 +1,27 @@
+---
+:source:
+  :path: test
+  :file: test_json.c
+:successes:
+- :test: test_json
+  :line: 10
+  :message: ''
+:failures: []
+:ignores: []
+:counts:
+  :total: 1
+  :passed: 1
+  :failed: 0
+  :ignored: 0
+:stdout:
+- ! '{'
+- ! "\t\"name\":\t\"Jack (\\\"Bee\\\") Nimble\","
+- ! "\t\"format\":\t{"
+- ! "\t\t\"type\":\t\"rect\","
+- ! "\t\t\"width\":\t1920,"
+- ! "\t\t\"height\":\t1080,"
+- ! "\t\t\"interlace\":\tfalse,"
+- ! "\t\t\"frame rate\":\t24"
+- ! "\t}"
+- ! '}'
+- ''
