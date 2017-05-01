@@ -39,7 +39,6 @@ typedef struct Altimeter_s {
 
   float Flight_Altitude_trigger; 	//altitude at which the state switch to in flight
   float Launch_Acceleration_trigger; 	//altitude at which the state switch to in flight
-
   float Main_Ejection_Altitude;
   float Ultrasonic_Delay;       // delay after launch to prevent false trigger
   float Apogee_Ejection_Delay;  // post-apogee delay
@@ -48,9 +47,10 @@ typedef struct Altimeter_s {
   float Apogee_Estimation;  // estimation de l'apogee en real time, free fall body
 
   uint32_t Burnout_Detected;    // burnout du moteur detecté
-  uint32_t Burnout_Time;     // mission time at which enginer burnout is reached
+  uint32_t Burnout_Time;     // mission time at which engine burnout is reached in ms
+
   uint32_t Apogee_Detected;     // apogee detecté
-  uint32_t Apogee_Time;			    // mission time at which apogee is reached
+  uint32_t Apogee_Time;			    // mission time at which apogee is reached in ms
 
   uint32_t isInitialized;
 } Altimeter_t;

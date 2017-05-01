@@ -38,6 +38,7 @@
 #include "rtc.h"
 #include "sdio.h"
 #include "usb_device.h"
+#include "cJSON.h"
 #include "User_Setting_Backup.h"
 
 /******************************************************************************/
@@ -110,10 +111,13 @@ uint32_t byteread, bytewritten;         // File R/W count
 // buffer pour sauvegarder des donnees
 uint8_t Save_String[512] = { 0 };
 uint8_t Rocket_State_String[64] = { 0 };
+uint8_t Rocket_State_String_Telemetry[64] = { 0 };
 
 //buffer pour le virtual com port USB
 uint8_t USB_CDC_RX[64] = { 0 };
 uint8_t USB_CDC_TX[64] = { 0 };
+
+
 
 // devices global variable
 Backup_Setting_t Backup_Settings;
@@ -129,6 +133,9 @@ Main_Parachute_t Main_Parachute;
 Telemetry_t Telemetry;
 RFD900_t RFD900 = { .RX = { 0 } };
 
+
+
+
 /******************************************************************************/
 /*                             Function prototype                             */
 /******************************************************************************/
@@ -136,6 +143,7 @@ void Init_rocket(Rockets_t * temp_rocket);
 void State_Manager(Rockets_t * temp_rocket);
 void separateDecimalValue(float_t value, int16_t * buff);
 void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff);
+void Update_Telemetry(Telemetry_t * temp_telemetry, Rockets_t * temp_Rocket);
 
 #endif /* MAIN_GEMMA_H_ */
 

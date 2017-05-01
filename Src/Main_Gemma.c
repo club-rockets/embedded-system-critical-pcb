@@ -56,6 +56,30 @@ void Init_rocket(Rockets_t * temp_rocket) {
  *
  *
  * ARGUMENTS :
+ *    -
+ *
+ * RETURN :
+ *    -
+ *
+ *********************************************************************************************/
+void Update_Telemetry(Telemetry_t * temp_telemetry, Rockets_t * temp_Rocket) {
+  temp_telemetry->Barometer_AGL_Altitude = temp_Rocket->Altimeter->AGL_Altitude;
+  temp_telemetry->Barometer_Altitude = temp_Rocket->Altimeter
+      ->Barometric_Altitude;
+  temp_telemetry->Barometer_Temperature = temp_Rocket->Barometer->temperature;
+  temp_telemetry->Estimated_AGL_Altitude = temp_Rocket->Altimeter
+      ->Filtered_Altitude;
+  temp_telemetry->Estimated_Velocity =
+      temp_Rocket->Altimeter->Filtered_Velocity;
+  temp_telemetry->Estimated_Acceleration = temp_Rocket->Altimeter
+      ->Filtered_Acceleration;
+  temp_telemetry->Mission_Time = temp_Rocket->Mission_Time;
+}
+
+/*********************************************************************************************
+ *
+ *
+ * ARGUMENTS :
  * 		-
  *
  * RETURN :
@@ -823,7 +847,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     f_lseek(&data_file, f_size(&data_file));
 
     //save user setting to Backup SRAM
-    //this ram wont erase upon power cycling
+    //this ram sector wont erase upon power cycling
     Save_Backup_SRAM(&Backup_Settings);
 
     save_counter++;
@@ -843,7 +867,45 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
    *
    *********************************************************************************************/
   if (htim->Instance == TIM3) {
-    HAL_UART_Transmit(&huart2, "hello world", 13, 2);
+    //variable JSON for parsing data to base station
+    char * telemetry_string;
+    cJSON * root_json;
+    cJSON * measures_json;
+    cJSON * altimeter_json;
+
+    Get_State_String(&RocketsVar, Rocket_State_String_Telemetry);
+
+    root_json = cJSON_CreateObject();
+    measures_json = cJSON_CreateObject();
+    altimeter_json = cJSON_CreateObject();
+
+    cJSON_AddItemToObject(root_json, "ID",
+                          cJSON_CreateString("Amarok"));
+    cJSON_AddItemToObject(root_json, "State",
+                          cJSON_CreateString(Rocket_State_String_Telemetry));
+
+    cJSON_AddItemToObject(root_json, "Measures", measures_json);
+    cJSON_AddItemToObject(measures_json, "Altitude", altimeter_json);
+
+    cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
+                            RocketsVar.Altimeter->AGL_Altitude);
+
+    cJSON_AddNumberToObject(altimeter_json, "Estimated_Altitude",
+                            RocketsVar.Altimeter->Filtered_Altitude);
+
+    cJSON_AddNumberToObject(altimeter_json, "Estimated_Velocity",
+                            RocketsVar.Altimeter->Filtered_Velocity);
+
+    cJSON_AddNumberToObject(altimeter_json, "Estimated_Acceleration",
+                            RocketsVar.Altimeter->Filtered_Acceleration);
+
+    telemetry_string = cJSON_PrintUnformatted((root_json));
+
+    HAL_UART_Transmit(&huart2, telemetry_string, strlen(telemetry_string), 2);
+    HAL_UART_Transmit(&huart2, "\n", 1, 2);
+
+    free(telemetry_string);
+    cJSON_Delete(root_json);
   }
 
 }
@@ -934,10 +996,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     } else {
 
     }
-
-
-
-
 
   }
 }
