@@ -52,29 +52,6 @@ void Init_rocket(Rockets_t * temp_rocket) {
   temp_rocket->isInitialized = 1;
 }
 
-/*********************************************************************************************
- *
- *
- * ARGUMENTS :
- *    -
- *
- * RETURN :
- *    -
- *
- *********************************************************************************************/
-void Update_Telemetry(Telemetry_t * temp_telemetry, Rockets_t * temp_Rocket) {
-  temp_telemetry->Barometer_AGL_Altitude = temp_Rocket->Altimeter->AGL_Altitude;
-  temp_telemetry->Barometer_Altitude = temp_Rocket->Altimeter
-      ->Barometric_Altitude;
-  temp_telemetry->Barometer_Temperature = temp_Rocket->Barometer->temperature;
-  temp_telemetry->Estimated_AGL_Altitude = temp_Rocket->Altimeter
-      ->Filtered_Altitude;
-  temp_telemetry->Estimated_Velocity =
-      temp_Rocket->Altimeter->Filtered_Velocity;
-  temp_telemetry->Estimated_Acceleration = temp_Rocket->Altimeter
-      ->Filtered_Acceleration;
-  temp_telemetry->Mission_Time = temp_Rocket->Mission_Time;
-}
 
 /*********************************************************************************************
  *
@@ -262,7 +239,7 @@ void State_Manager(Rockets_t * temp_rocket) {
       break;
 
     case MAIN_DESCENT:
-      //lorsque la fusee atteind le meme threshold que pour le flight mode
+      //lorsque la fusee atteint le meme threshold que pour le flight mode
       if (temp_rocket->Altimeter->AGL_Altitude
           < temp_rocket->Altimeter->Flight_Altitude_trigger) {
         temp_rocket->Rocket_State = LANDING;
@@ -350,6 +327,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Init_RFD900(&RFD900);
         Init_Inertial_Station(&Inertial_Station);
         Init_Kalman(&Kalman_Altitude);
+        Init_LP_Filter(&LP_Filter);
 
         //init non volatile memory (BACKUP SRAM)
         //read values of settings before power cycle in init fct
@@ -430,6 +408,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         LED.Critical_LED4 = 0;
         LED.Critical_LED3 = 0;
         Buzzer.Buzzer_enable = 0;
+        Telemetry.Loop_Step = 1; //each 4x main loop
+
         break;
 
         /*******************************************************************
@@ -584,6 +564,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case RECOVERY:
+        Telemetry.Loop_Step = 100;
+
         break;
 
         /*******************************************************************
@@ -655,7 +637,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     //grab sea altitude level to offset AGL altitude
     //one time
     if (RocketsVar.Rocket_State == INITIALISATION) {
-      Compute_Initial_Altitude(&Altimeter);
+      while( Altimeter.Initial_Altitude_Count){
+        Compute_Barometer_Pressure(&Barometer);
+        Compute_Air_Density(&Barometer);
+        Compute_Initial_Altitude(&Altimeter);
+        Altimeter.Initial_Altitude_Count--;
+      }
     }
 
     Compute_AGL_Altitude(&Altimeter);
@@ -710,6 +697,55 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
     f_puts((TCHAR*) Save_String, &data_file);
 
+    /***************************************************
+     * Telemetrie
+     ***************************************************/
+    if(!(loop_counter % Telemetry.Loop_Step) && !(Telemetry.Busy)){
+      cJSON * root_json;
+      cJSON * measures_json;
+      cJSON * altimeter_json;
+
+      HAL_UART_Receive_IT(&huart2, (uint8_t*)Telemetry.RX_JSON_string, 2);
+
+      Get_State_String(&RocketsVar, (uint8_t*)Telemetry.Rocket_State_String);
+
+      root_json = cJSON_CreateObject();
+      measures_json = cJSON_CreateObject();
+      altimeter_json = cJSON_CreateObject();
+
+      cJSON_AddItemToObject(root_json, "ID",
+                            cJSON_CreateString(Telemetry.Telemetry_ID));
+      cJSON_AddItemToObject(root_json, "State",
+                            cJSON_CreateString(Telemetry.Rocket_State_String));
+
+      cJSON_AddItemToObject(root_json, "Sensors", measures_json);
+      cJSON_AddItemToObject(measures_json, "Altimeter", altimeter_json);
+
+      cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
+                              Altimeter.AGL_Altitude);
+
+      cJSON_AddNumberToObject(altimeter_json, "Estimated_Altitude",
+                              Altimeter.Filtered_Altitude);
+
+      cJSON_AddNumberToObject(altimeter_json, "Estimated_Velocity",
+                              Altimeter.Filtered_Velocity);
+
+      cJSON_AddNumberToObject(altimeter_json, "Estimated_Acceleration",
+                              Altimeter.Filtered_Acceleration);
+
+      Telemetry.TX_JSON_string = cJSON_PrintUnformatted((root_json));
+
+      //realloc JSON string with another case to add "\n"
+      Telemetry.TX_JSON_Base_Station = malloc(strlen(Telemetry.TX_JSON_string) + 10);
+      strcpy(Telemetry.TX_JSON_Base_Station,Telemetry.TX_JSON_string);
+      free(Telemetry.TX_JSON_string);
+      strcat(Telemetry.TX_JSON_Base_Station, "\n");
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)Telemetry.TX_JSON_Base_Station, strlen(Telemetry.TX_JSON_Base_Station));
+      Telemetry.Busy = 1;
+
+      //free(Telemetry.TX_JSON_string);
+      cJSON_Delete(root_json);
+    }
     /***************************************************
      * update rocket state
      ***************************************************/
@@ -867,48 +903,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
    *
    *********************************************************************************************/
   if (htim->Instance == TIM3) {
-    //variable JSON for parsing data to base station
-    char * telemetry_string;
-    cJSON * root_json;
-    cJSON * measures_json;
-    cJSON * altimeter_json;
 
-    Get_State_String(&RocketsVar, Rocket_State_String_Telemetry);
-
-    root_json = cJSON_CreateObject();
-    measures_json = cJSON_CreateObject();
-    altimeter_json = cJSON_CreateObject();
-
-    cJSON_AddItemToObject(root_json, "ID",
-                          cJSON_CreateString("Amarok"));
-    cJSON_AddItemToObject(root_json, "State",
-                          cJSON_CreateString(Rocket_State_String_Telemetry));
-
-    cJSON_AddItemToObject(root_json, "Measures", measures_json);
-    cJSON_AddItemToObject(measures_json, "Altitude", altimeter_json);
-
-    cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
-                            RocketsVar.Altimeter->AGL_Altitude);
-
-    cJSON_AddNumberToObject(altimeter_json, "Estimated_Altitude",
-                            RocketsVar.Altimeter->Filtered_Altitude);
-
-    cJSON_AddNumberToObject(altimeter_json, "Estimated_Velocity",
-                            RocketsVar.Altimeter->Filtered_Velocity);
-
-    cJSON_AddNumberToObject(altimeter_json, "Estimated_Acceleration",
-                            RocketsVar.Altimeter->Filtered_Acceleration);
-
-    telemetry_string = cJSON_PrintUnformatted((root_json));
-
-    HAL_UART_Transmit(&huart2, telemetry_string, strlen(telemetry_string), 2);
-    HAL_UART_Transmit(&huart2, "\n", 1, 2);
-
-    free(telemetry_string);
-    cJSON_Delete(root_json);
   }
 
 }
+
+
+
 
 /*********************************************************************************************
  *	CAN2 RX callback
@@ -994,9 +995,28 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
       RFD900.RX[0] = 0;
       RFD900.RX[1] = 0;
     } else {
+      //decode JSON input string
+
 
     }
 
+  }
+}
+
+/*********************************************************************************************
+ * interrupt for end of DMA xfer on usart
+ *
+ * ARGUMENTS :
+ *    -
+ *
+ * RETURN :
+ *    -
+ *
+ *********************************************************************************************/
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+  if (huart->Instance == USART2) {
+    free(Telemetry.TX_JSON_Base_Station);
+    Telemetry.Busy = 0;
   }
 }
 

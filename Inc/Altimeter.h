@@ -20,11 +20,11 @@
 /******************************************************************************/
 /*                                Define                                      */
 /******************************************************************************/
-#define APOGEE_EJECTION_DELAY_MS 	2000 //delais d'ejection apres la detection d'apogee
-#define ULTRASONIC_DELAY_MS 		  4999 //delais minimum apres le launch avant de pouvoir detection l'apogee
-#define LAUNCH_ACCEL_TRIGGER		  3 // valeur proportionnelle a l'accel qui declanche le launch
-#define FLIGHT_ALTITUDE_TRIGGER		100 // altitude apres la detection du launch a laquelle on change d'etat
-#define MAIN_EJECTION_ALTITUDE		333 //altitude de deploiement du MAIN chute
+#define APOGEE_EJECTION_DELAY_MS 	2000 //delais d'ejection apres la detection d'apogee en millisec
+#define ULTRASONIC_DELAY_MS 		  1000 //delais minimum apres le launch avant de pouvoir detection l'apogee en millisec
+#define LAUNCH_ACCEL_TRIGGER		  5 // valeur proportionnelle a l'accel qui declanche le launch state
+#define FLIGHT_ALTITUDE_TRIGGER		100 // altitude apres la detection du launch a laquelle on change d'etat en metre
+#define MAIN_EJECTION_ALTITUDE		333 //altitude de deploiement du MAIN chute en metre
 
 /******************************************************************************/
 /*                              Type  Prototype                               */
@@ -36,6 +36,7 @@ typedef struct Altimeter_s {
   float Filtered_Acceleration;  // kalman filter estimated velocity
   float Filtered_Velocity;      // kalman filter estimated acceleration
   float AGL_Altitude;           // above ground level altitude
+  float LP_Filter_Altitude;     // altitude filtered with low pass filter 4th order
 
   float Flight_Altitude_trigger; 	//altitude at which the state switch to in flight
   float Launch_Acceleration_trigger; 	//altitude at which the state switch to in flight
@@ -52,6 +53,7 @@ typedef struct Altimeter_s {
   uint32_t Apogee_Detected;     // apogee detecté
   uint32_t Apogee_Time;			    // mission time at which apogee is reached in ms
 
+  uint32_t Initial_Altitude_Count;
   uint32_t isInitialized;
 } Altimeter_t;
 

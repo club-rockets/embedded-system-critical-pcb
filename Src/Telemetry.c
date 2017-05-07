@@ -25,17 +25,10 @@
  *
  *********************************************************************************************/
 void Init_Telemetry(Telemetry_t * temp_telemetry) {
-  temp_telemetry->Telemetry_ID = 1;
-  temp_telemetry->Mission_Time = 0;
-
-  temp_telemetry->Barometer_Altitude = 0;
-  temp_telemetry->Barometer_AGL_Altitude = 0;
-  temp_telemetry->Barometer_Temperature = 0;
-
-  temp_telemetry->Estimated_AGL_Altitude = 0;
-  temp_telemetry->Estimated_Acceleration = 0;
-  temp_telemetry->Estimated_Velocity = 0;
-
+  strcpy(temp_telemetry->Telemetry_ID, "Amarok");
+  temp_telemetry->TX_JSON_string = NULL;
+  temp_telemetry->Busy = 0;
+  temp_telemetry->Loop_Step = 20; //1seconde
   temp_telemetry->isInitialized = 1;
 }
 

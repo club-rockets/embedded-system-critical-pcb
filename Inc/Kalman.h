@@ -23,19 +23,19 @@
 /******************************************************************************/
 /*                                Define                                      */
 /******************************************************************************/
-#define ALTITUDE_SIGMA 		2.0	 // ecart type de la mesure d'altitude barometrique
+#define ALTITUDE_SIGMA 		  6	 // ecart type de la mesure d'altitude barometrique
 #define ACCELERATION_SIGMA 	0  // ecart type de la mesure d'acceleration
 
 #define BAROMETER_H_GAIN		  1	//1 ou 0, maps le capteur dans le filtre
 #define ACCELEROMETER_H_GAIN	0 //1 ou 0, maps le capteur dans le filtre
 
 #define KALMAN_TIME_STEP		0.05        // pas de calcul en seconde
-#define CONVERGENCE_TIMEOUT		50        // nombre d'essai pour trouver les gains de kalman optimals
+#define CONVERGENCE_TIMEOUT		100        // nombre d'essai pour trouver les gains de kalman optimals
 #define CONVERGENCE_PRECISION	0.000001  //critere de convergence
 
-#define VAR_MODEL_S 10.4  // variance de l'altitude dans le modele
-#define VAR_MODEL_V 5.6   // variance de la vitesse dans le modele
-#define VAR_MODEL_A 11.2 // variance de l'acceleration dans le modele
+#define VAR_MODEL_S 25  // variance de l'altitude dans le modele
+#define VAR_MODEL_V 5 // variance de la vitesse dans le modele
+#define VAR_MODEL_A 1 // variance de l'acceleration dans le modele
 /******************************************************************************/
 /*                              Type  Prototype                               */
 /******************************************************************************/

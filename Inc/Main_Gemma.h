@@ -33,6 +33,7 @@
 #include "Telemetry.h"
 #include "Inertial_Station.h"
 #include "Kalman.h"
+#include "Low_Pass_Filter.h"
 
 #include "fatfs.h"
 #include "rtc.h"
@@ -132,7 +133,7 @@ LED_t LED;
 Main_Parachute_t Main_Parachute;
 Telemetry_t Telemetry;
 RFD900_t RFD900 = { .RX = { 0 } };
-
+LP_Filter_t LP_Filter;
 
 
 
@@ -143,7 +144,6 @@ void Init_rocket(Rockets_t * temp_rocket);
 void State_Manager(Rockets_t * temp_rocket);
 void separateDecimalValue(float_t value, int16_t * buff);
 void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff);
-void Update_Telemetry(Telemetry_t * temp_telemetry, Rockets_t * temp_Rocket);
 
 #endif /* MAIN_GEMMA_H_ */
 

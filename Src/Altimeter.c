@@ -26,10 +26,12 @@
  *********************************************************************************************/
 void Init_Altimeter(Altimeter_t * temp_altimeter) {
   temp_altimeter->Barometric_Altitude = 0;
+  temp_altimeter->LP_Filter_Altitude = 0;
   temp_altimeter->Filtered_Altitude = 0;
   temp_altimeter->Filtered_Acceleration = 0;
   temp_altimeter->Filtered_Velocity = 0;
   temp_altimeter->Initial_Altitude = 0;
+  temp_altimeter->AGL_Altitude = 0;
   temp_altimeter->Apogee_Altitude = 0;
   temp_altimeter->Apogee_Estimation = 0;
   temp_altimeter->Burnout_Detected = 0;
@@ -43,6 +45,7 @@ void Init_Altimeter(Altimeter_t * temp_altimeter) {
   temp_altimeter->Launch_Acceleration_trigger = LAUNCH_ACCEL_TRIGGER;
   temp_altimeter->Main_Ejection_Altitude = MAIN_EJECTION_ALTITUDE;
 
+  temp_altimeter->Initial_Altitude_Count = 20;
   temp_altimeter->isInitialized = 1;
 }
 
@@ -57,7 +60,7 @@ void Init_Altimeter(Altimeter_t * temp_altimeter) {
  *
  *********************************************************************************************/
 void Compute_Initial_Altitude(Altimeter_t * temp_altimeter) {
-  temp_altimeter->Initial_Altitude = temp_altimeter->Barometric_Altitude;
+  temp_altimeter->Initial_Altitude = (temp_altimeter->Initial_Altitude + temp_altimeter->Barometric_Altitude) / 2;
 }
 
 /*********************************************************************************************

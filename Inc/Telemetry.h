@@ -26,17 +26,13 @@
 /*                              Type  Prototype                               */
 /******************************************************************************/
 typedef struct Telemetry_s {
-  uint32_t Telemetry_ID;
-  float Barometer_Temperature;
-  float Barometer_Altitude;
-  float Barometer_AGL_Altitude;
-
-  float Mission_Time;
-
-  float Estimated_AGL_Altitude;
-  float Estimated_Velocity;
-  float Estimated_Acceleration;
-
+  char   Telemetry_ID[16];
+  unsigned int Loop_Step;
+  unsigned int Busy;
+  char   Rocket_State_String[64];
+  char   RX_JSON_string[64];
+  char * TX_JSON_string;//must be char for JSON to work properly, does mem leak
+  char * TX_JSON_Base_Station; //temp pour rajouter \n
   uint32_t isInitialized;
 } Telemetry_t;
 
