@@ -22,7 +22,8 @@
 /******************************************************************************/
 /*                                Define                                      */
 /******************************************************************************/
-#define CAN_ROCKET_STATE_ID       0x111
+#define CAN_ROCKET_STATE_REQ_ID   0x001
+#define CAN_ROCKET_STATE_ID       0x011
 
 #define CAN_GPS_LONGITUDE_ID      0x211
 #define CAN_GPS_LATITUDE_ID       0x212
@@ -30,10 +31,10 @@
 #define CAN_GPS_FIX_TYPE_ID       0x214
 #define CAN_GPS_LOCKED_ID         0x215
 #define CAN_GPS_N_SATELLITE_ID    0x216
-
 #define CAN_ACCELERATION_X_ID 	  0x221
 #define CAN_ACCELERATION_Y_ID     0x222
 #define CAN_ACCELERATION_Z_ID     0x223
+
 
 /******************************************************************************/
 /*                              Type  Prototype                               */

@@ -97,7 +97,6 @@ void Update_Alarm_Rocket(Buzzer_t * temp_buzzer) {
         i = 0;
         break;
       default:
-        i = 0;
         break;
     }
 

@@ -52,7 +52,6 @@ void Init_rocket(Rockets_t * temp_rocket) {
   temp_rocket->isInitialized = 1;
 }
 
-
 /*********************************************************************************************
  *
  *
@@ -249,7 +248,7 @@ void State_Manager(Rockets_t * temp_rocket) {
       break;
 
     case LANDING:
-      //lorsque la vitesse augmente, l'acceleration passe de neg. a pos.
+      //lorsque la vitesse arrete d'augmenter negativement, l'acceleration passe de neg. a pos.
       if (temp_rocket->Altimeter->Filtered_Acceleration > 0) {
         temp_rocket->Rocket_State = RECOVERY;
       }
@@ -257,7 +256,7 @@ void State_Manager(Rockets_t * temp_rocket) {
 
     case RECOVERY:
       //si la position varie, la vitesse va varier...
-      if (fabs(temp_rocket->Altimeter->Filtered_Velocity) > 2) {
+      if (fabs(temp_rocket->Altimeter->Filtered_Velocity) > 5) {
         temp_rocket->Rocket_State = PICKEDUP;
       }
       break;
@@ -340,6 +339,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Altimeter.Main_Ejection_Altitude = Get_Backup_Altitude_Main(
             &Backup_Settings);
 
+        //canbus buffer setting
+        hcan2.pTxMsg = &CanTx_msg;
+        hcan2.pRxMsg = &CanRx_msg;
+
+        CAN_FilterStruct.FilterIdHigh = 0x0000; /* Upper 16bit filter ID */
+        CAN_FilterStruct.FilterIdLow = 0x0000; /* Filter lower 16bit ID */
+        CAN_FilterStruct.FilterMaskIdHigh = 0x0000; /* Upper 16bit filter mask */
+        CAN_FilterStruct.FilterMaskIdLow = 0x0000; /* Lower 16bit filter mask */
+        CAN_FilterStruct.FilterFIFOAssignment = CAN_FILTER_FIFO0; /* Which FIFO will be assigned to filter */
+        CAN_FilterStruct.FilterNumber = 14;  // 0..27 for CAN2
+        CAN_FilterStruct.FilterMode = CAN_FILTERMODE_IDMASK; /* Identifier mask mode */
+        CAN_FilterStruct.FilterScale = CAN_FILTERSCALE_32BIT; /* 32bit ID filter */
+        CAN_FilterStruct.FilterActivation = ENABLE; /* Enable this filter */
+        CAN_FilterStruct.BankNumber = 14; /* Start slave bank filter (?) */
+
+        HAL_CAN_ConfigFilter(&hcan2, &CAN_FilterStruct); /* Initialize filter */
+
         //init de fatfs et de la SD
         if (BSP_SD_Init() == 0) {
           f_mount(&fs, (TCHAR const*) SD_Path, 1);
@@ -382,14 +398,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         if (Drogue_Parachute.Ejection_Charge_Detect
             && Main_Parachute.Ejection_Charge_Detect) {
           Buzzer.Buzzer_mode = 3;
+          LED.Status_LED_Drogue_Armed = 1;
+          LED.Status_LED_Main_Armed = 1;
         } else if (Drogue_Parachute.Ejection_Charge_Detect
             && !Main_Parachute.Ejection_Charge_Detect) {
           Buzzer.Buzzer_mode = 2;
+          LED.Status_LED_Drogue_Armed = 1;
+          LED.Status_LED_Main_Armed = 0;
         } else if (!Drogue_Parachute.Ejection_Charge_Detect
             && Main_Parachute.Ejection_Charge_Detect) {
           Buzzer.Buzzer_mode = 1;
+          LED.Status_LED_Drogue_Armed = 0;
+          LED.Status_LED_Main_Armed = 1;
         } else {
           Buzzer.Buzzer_mode = 0;
+          LED.Status_LED_Drogue_Armed = 0;
+          LED.Status_LED_Main_Armed = 0;
         }
 
         break;
@@ -408,7 +432,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         LED.Critical_LED4 = 0;
         LED.Critical_LED3 = 0;
         Buzzer.Buzzer_enable = 0;
-        Telemetry.Loop_Step = 1; //each 4x main loop
+        Telemetry.Loop_Step = 1;  //each 4x main loop
 
         break;
 
@@ -612,12 +636,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
     //simulator
     //overwrite pressure data only
-    /*
+
+
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
      % sizeof(PRESSURE_POINTS_HYPERION)];
      }
-     *//*
+     /*
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION_SONIC[loop_counter
      % sizeof(PRESSURE_POINTS_HYPERION) >> 2];
@@ -635,9 +660,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Barometer.pressure);
 
     //grab sea altitude level to offset AGL altitude
-    //one time
     if (RocketsVar.Rocket_State == INITIALISATION) {
-      while( Altimeter.Initial_Altitude_Count){
+      while (Altimeter.Initial_Altitude_Count) {
         Compute_Barometer_Pressure(&Barometer);
         Compute_Air_Density(&Barometer);
         Compute_Initial_Altitude(&Altimeter);
@@ -700,14 +724,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     /***************************************************
      * Telemetrie
      ***************************************************/
-    if(!(loop_counter % Telemetry.Loop_Step) && !(Telemetry.Busy)){
+    if (!(loop_counter % Telemetry.Loop_Step) && !(Telemetry.Busy)) {
       cJSON * root_json;
       cJSON * measures_json;
       cJSON * altimeter_json;
 
-      HAL_UART_Receive_IT(&huart2, (uint8_t*)Telemetry.RX_JSON_string, 2);
+      HAL_UART_Receive_IT(&huart2, (uint8_t*) Telemetry.RX_JSON_string, 2);
 
-      Get_State_String(&RocketsVar, (uint8_t*)Telemetry.Rocket_State_String);
+      Get_State_String(&RocketsVar, (uint8_t*) Telemetry.Rocket_State_String);
 
       root_json = cJSON_CreateObject();
       measures_json = cJSON_CreateObject();
@@ -736,17 +760,40 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       Telemetry.TX_JSON_string = cJSON_PrintUnformatted((root_json));
 
       //realloc JSON string with another case to add "\n"
-      Telemetry.TX_JSON_Base_Station = malloc(strlen(Telemetry.TX_JSON_string) + 10);
-      strcpy(Telemetry.TX_JSON_Base_Station,Telemetry.TX_JSON_string);
+      Telemetry.TX_JSON_Base_Station = malloc(
+          strlen(Telemetry.TX_JSON_string) + 10);
+      strcpy(Telemetry.TX_JSON_Base_Station, Telemetry.TX_JSON_string);
       free(Telemetry.TX_JSON_string);
       strcat(Telemetry.TX_JSON_Base_Station, "\n");
-      HAL_UART_Transmit_DMA(&huart2, (uint8_t *)Telemetry.TX_JSON_Base_Station, strlen(Telemetry.TX_JSON_Base_Station));
+      HAL_UART_Transmit_DMA(&huart2, (uint8_t *) Telemetry.TX_JSON_Base_Station,
+                            strlen(Telemetry.TX_JSON_Base_Station));
       Telemetry.Busy = 1;
 
       //free(Telemetry.TX_JSON_string);
       cJSON_Delete(root_json);
     }
+
     /***************************************************
+     * CANBUS comm
+     ***************************************************
+     if(!(loop_counter%20)){
+     CanTx_msg.Data[0] = 'a';
+     CanTx_msg.Data[1] = 'b';
+     CanTx_msg.Data[2] = 'c';
+     CanTx_msg.Data[3] = 'd';
+     CanTx_msg.Data[4] = 'e';
+     CanTx_msg.Data[5] = 'f';
+     CanTx_msg.Data[6] = 'g';
+     CanTx_msg.Data[7] = 'h';
+     CanTx_msg.StdId = 0x111;
+     CanTx_msg.DLC = 2;
+
+     HAL_CAN_Transmit(&hcan2, 20);
+     }
+
+
+
+     ***************************************************
      * update rocket state
      ***************************************************/
     State_Manager(&RocketsVar);
@@ -760,7 +807,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     //est presentement utilisé avec des script sur teraterm
     //rx is done elsewhere in usb_cdc_if.c
     if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-      volatile uint8_t val = 0;
+      volatile int val = 0;
       if (USB_CDC_RX[0] == 'd' && USB_CDC_RX[1] == 'a' && USB_CDC_RX[2] == 't'
           && USB_CDC_RX[3] == 'e') {
         HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -840,6 +887,30 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
       }
+
+      if (USB_CDC_RX[0] == 'u' && USB_CDC_RX[1] == 'd') {
+        val = atoi(&USB_CDC_RX[2]);
+        Altimeter.Ultrasonic_Delay = (float)val;
+        itoa(val, USB_CDC_TX, 10);
+        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+        USB_CDC_RX[0] = 0;
+      }
+
+      if (USB_CDC_RX[0] == 'a' && USB_CDC_RX[1] == 'd') {
+        val = atoi(&USB_CDC_RX[2]);
+        Altimeter.Apogee_Ejection_Delay = (float)val;
+        itoa(val, USB_CDC_TX, 10);
+        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+        USB_CDC_RX[0] = 0;
+      }
+
+      if (USB_CDC_RX[0] == 'm' && USB_CDC_RX[1] == 'a') {
+        val = atoi(&USB_CDC_RX[2]);
+        Altimeter.Main_Ejection_Altitude = (float)val;
+        itoa(val, USB_CDC_TX, 10);
+        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+        USB_CDC_RX[0] = 0;
+      }
     }
 
     /***************************************************
@@ -884,6 +955,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
     //save user setting to Backup SRAM
     //this ram sector wont erase upon power cycling
+    Set_Backup_Apogee_Delay(&Backup_Settings, Altimeter.Apogee_Ejection_Delay);
+    Set_Backup_Altitude_Main(&Backup_Settings, Altimeter.Main_Ejection_Altitude);
+    Set_Backup_Sonic_Delay(&Backup_Settings, Altimeter.Ultrasonic_Delay);
     Save_Backup_SRAM(&Backup_Settings);
 
     save_counter++;
@@ -908,9 +982,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
 }
 
-
-
-
 /*********************************************************************************************
  *	CAN2 RX callback
  *
@@ -923,9 +994,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
  *
  *********************************************************************************************/
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
+
   if (hcan->Instance == CAN2) {
 
     switch (hcan->pRxMsg->StdId) {
+
+      case CAN_ROCKET_STATE_REQ_ID:
+        CanTx_msg.StdId = CAN_ROCKET_STATE_ID;
+        CanTx_msg.DLC = sizeof(Rocket_State_t);
+        memcpy(hcan->pTxMsg->Data, &RocketsVar.Rocket_State,
+               sizeof(Rocket_State_t));
+        HAL_CAN_Transmit(&hcan2, 1);
+        break;
 
       case CAN_GPS_LONGITUDE_ID:
         memcpy(&Inertial_Station.GPS_longitude, hcan->pRxMsg->Data,
@@ -967,6 +1047,9 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         // do nothing
         break;
     }
+
+    __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);
+
   }
 }
 
@@ -997,7 +1080,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     } else {
       //decode JSON input string
 
-
     }
 
   }
@@ -1013,7 +1095,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
  *    -
  *
  *********************************************************************************************/
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
   if (huart->Instance == USART2) {
     free(Telemetry.TX_JSON_Base_Station);
     Telemetry.Busy = 0;
