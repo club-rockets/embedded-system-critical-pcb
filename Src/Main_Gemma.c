@@ -12,11 +12,17 @@
  RockETS, Montreal
  Ecole de Technologies Superieures
 
- this file contain the main program
- every ISR is called here and passes global variable
+ Ce fichier contient des wrapper et les routines d'inturruption principale, utilisé à l'aide de
+ callback. les interruption handler sont dans stm32f4xx_it.c et appelent les callbacks (cubeMX)
 
+ on y retrouve deux timer synchronisé (50ms et 5s) pour gerer la boucle principale et la
+ sauvegarde des données (SD + backup'd RAM)
 
+ le rfd900/uart1 utilise la DMA pour xmit. un callback sur la fin de la transmission assure
+ de ne pas renvoyer de data alors que la dma n'a pas fini son transfert. le receive se fait
+ aussi avec un callback et la longeur de la trame attendue doit etre connu pour se faire.
 
+ un callback est utiliser pour le CAN et le SD_detect (EXTI)
 
 
  *********************************************************************************************/
@@ -637,11 +643,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     //simulator
     //overwrite pressure data only
 
-
+/*
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
      % sizeof(PRESSURE_POINTS_HYPERION)];
      }
+     */
      /*
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION_SONIC[loop_counter
@@ -729,6 +736,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON * measures_json;
       cJSON * altimeter_json;
 
+      sprintf(
+              (char*) (Telemetry.Time_String_Telemetry),
+              "20%02d-%02d-%02dT%02d:%02d:%02d:%02lu",
+              sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes,
+              sTime.Seconds, sTime.SubSeconds * 100 / sTime.SecondFraction);
+
       HAL_UART_Receive_IT(&huart2, (uint8_t*) Telemetry.RX_JSON_string, 2);
 
       Get_State_String(&RocketsVar, (uint8_t*) Telemetry.Rocket_State_String);
@@ -742,7 +755,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON_AddItemToObject(root_json, "State",
                             cJSON_CreateString(Telemetry.Rocket_State_String));
 
+      cJSON_AddItemToObject(root_json, "Time Stamp", cJSON_CreateString(Telemetry.Time_String_Telemetry));
+
       cJSON_AddItemToObject(root_json, "Sensors", measures_json);
+
       cJSON_AddItemToObject(measures_json, "Altimeter", altimeter_json);
 
       cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
@@ -765,6 +781,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       strcpy(Telemetry.TX_JSON_Base_Station, Telemetry.TX_JSON_string);
       free(Telemetry.TX_JSON_string);
       strcat(Telemetry.TX_JSON_Base_Station, "\n");
+
       HAL_UART_Transmit_DMA(&huart2, (uint8_t *) Telemetry.TX_JSON_Base_Station,
                             strlen(Telemetry.TX_JSON_Base_Station));
       Telemetry.Busy = 1;

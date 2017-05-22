@@ -113,7 +113,6 @@ uint32_t byteread, bytewritten;         // File R/W count
 // buffer pour sauvegarder des donnees
 uint8_t Save_String[512] = { 0 };
 uint8_t Rocket_State_String[64] = { 0 };
-uint8_t Rocket_State_String_Telemetry[64] = { 0 };
 
 // buffer pour comm CANbus
 CanTxMsgTypeDef CanTx_msg;

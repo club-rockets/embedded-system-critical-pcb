@@ -30,6 +30,7 @@ typedef struct Telemetry_s {
   unsigned int Loop_Step;
   unsigned int Busy;
   char   Rocket_State_String[64];
+  char   Time_String_Telemetry[32];
   char   RX_JSON_string[64];
   char * TX_JSON_string;//must be char for JSON to work properly, does mem leak
   char * TX_JSON_Base_Station; //temp pour rajouter \n
