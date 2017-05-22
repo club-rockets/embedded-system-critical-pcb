@@ -22,25 +22,27 @@
  de ne pas renvoyer de data alors que la dma n'a pas fini son transfert. le receive se fait
  aussi avec un callback et la longeur de la trame attendue doit etre connu pour se faire.
 
- un callback est utiliser pour le CAN et le SD_detect (EXTI)
+ un callback est utiliser pour le CAN-receive et le SD_detect (EXTI)
 
 
  *********************************************************************************************/
 #include "Main_Gemma.h"
 
 /*********************************************************************************************
- *
+ * Init_rocket() initialise la variable RocketsVar déclaré dans main_gemma.h
+ * RocketsVar contient certain parametre de mission (flight state, compute time, etc)
+ * et elle contient aussi les address des autre managers
  *
  * ARGUMENTS :
- * 		-
+ * 		- Rocket_t *
  *
  * RETURN :
- * 		-
+ * 		- void
  *
  *********************************************************************************************/
 void Init_rocket(Rockets_t * temp_rocket) {
   temp_rocket->Rocket_State = INITIALISATION;
-  temp_rocket->Main_Loop_Time_Step = 50;
+  temp_rocket->Main_Loop_Time_Step = MAIN_LOOP_TIME;
   temp_rocket->Main_Compute_Time = 0;
   temp_rocket->Mission_Time = 0;
 
@@ -59,13 +61,14 @@ void Init_rocket(Rockets_t * temp_rocket) {
 }
 
 /*********************************************************************************************
- *
+ * separateDecimalValue() separe ans deux integer la partie decimal et unité d'un float
  *
  * ARGUMENTS :
- * 		-
+ * 		- float
+ * 		- int *
  *
  * RETURN :
- * 		-
+ * 		- void
  *
  *********************************************************************************************/
 void separateDecimalValue(float_t value, int16_t * buff) {
@@ -84,13 +87,14 @@ void separateDecimalValue(float_t value, int16_t * buff) {
 }
 
 /*********************************************************************************************
- *
+ * Get_State_String() recoit la RocketsVar et transmet dans une string l'état du vol
  *
  * ARGUMENTS :
- * 		-
+ * 		- rocket_t *
+ * 		- char[]
  *
  * RETURN :
- * 		-
+ * 		- void
  *
  *********************************************************************************************/
 void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff) {
@@ -147,13 +151,14 @@ void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff) {
 }
 
 /*********************************************************************************************
- *
+ * State_Manager() gère le changement de l'état du vol
+ * tous les parametres sont transmit via RocketsVar
  *
  * ARGUMENTS :
- * 		-
+ * 		- rocket_t *
  *
  * RETURN :
- * 		-
+ * 		- void
  *
  *********************************************************************************************/
 void State_Manager(Rockets_t * temp_rocket) {
@@ -278,16 +283,22 @@ void State_Manager(Rockets_t * temp_rocket) {
 }
 
 /*********************************************************************************************
- *	TIMER 1-2-3 callback
+ * TIMER 1-2-3 callback
+ * recoit le timer handler, un if doit etre fait pour savoir quel timer a fait un interruption
+ *
+ * TIM1 = main loop
+ * TIM2 = sauvegarde
+ *
  * ARGUMENTS :
- * 		-
+ * 		- htim *
  *
  * RETURN :
- * 		-
+ * 		- void
  *
  *********************************************************************************************/
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
   static uint32_t loop_counter, save_counter;
+
   /*********************************************************************************************
    *	Main program interrupt loop where the state machine of the rocket is implemented
    *	called by timer handler opon ellapsed period
@@ -589,7 +600,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
         /*******************************************************************
          * rocket is in recovery mode
-         * low power mode...
+         * rfd900 goes in slow transmission mode to save power for recovery
          *
          *
          *******************************************************************/
@@ -643,22 +654,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     //simulator
     //overwrite pressure data only
 
-/*
-     if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
-     Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
-     % sizeof(PRESSURE_POINTS_HYPERION)];
-     }
-     */
-     /*
-     if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
+    /*
+    if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
+    Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
+    % sizeof(PRESSURE_POINTS_HYPERION)];
+    }
+    */
+    /*
+    if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION_SONIC[loop_counter
-     % sizeof(PRESSURE_POINTS_HYPERION) >> 2];
-     }
+    % sizeof(PRESSURE_POINTS_HYPERION) >> 2];
+    }
 
-     if(loop_counter < sizeof(PRESSURE_POINT_AMAROK)>>2){
-     Barometer.pressure = PRESSURE_POINT_AMAROK[loop_counter%sizeof(PRESSURE_POINTS_HYPERION)];
-     }
-     */
+    if(loop_counter < sizeof(PRESSURE_POINT_AMAROK)>>2){
+    Barometer.pressure = PRESSURE_POINT_AMAROK[loop_counter%sizeof(PRESSURE_POINTS_HYPERION)];
+    }
+    */
 
     /***************************************************
      * update de l'altimetre et de kalman
