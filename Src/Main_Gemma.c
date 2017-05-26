@@ -650,6 +650,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      ***************************************************/
     Compute_Barometer_Pressure(&Barometer);
     Compute_Air_Density(&Barometer);
+    Compute_Sound_Speed(&Barometer);
 
     //simulator
     //overwrite pressure data only
@@ -725,7 +726,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      ***************************************************/
     sprintf(
         (char*) (Save_String),
-        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f\n",
+        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f\n",
         sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes,
         sTime.Seconds, Rocket_State_String, RocketsVar.Mission_Time,
         ((RocketsVar.Main_Compute_Time * 100) / RocketsVar.Main_Loop_Time_Step),
@@ -733,7 +734,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Main_Parachute.Ejection_Charge_Fire,
         Drogue_Parachute.Ejection_Charge_Detect,
         Drogue_Parachute.Ejection_Charge_Fire, Barometer.temperature,
-        RocketsVar.Barometer->Air_Density, Altimeter.Barometric_Altitude,
+        Barometer.Air_Density, Barometer.Sound_Speed,
+        Altimeter.Barometric_Altitude,
         Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude,
         Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
 

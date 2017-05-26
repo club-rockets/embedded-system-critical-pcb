@@ -78,6 +78,7 @@ uint16_t Read_Calibration_Coefficient(char coef_num);
 uint32_t Read_Barometer_Data(char cmd);
 void Compute_Barometer_Pressure(Barometer_t * this_baro);
 void Compute_Air_Density(Barometer_t * temp_barometer);
+void Compute_Sound_Speed(Barometer_t * temp_barometer);
 float Convert_mBar_To_Altitude(float pressure);
 
 #endif /* BAROMETER_H_ */

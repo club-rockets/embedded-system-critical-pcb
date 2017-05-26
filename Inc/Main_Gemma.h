@@ -47,7 +47,7 @@
 /*                                Define                                      */
 /******************************************************************************/
 #define FILENAME "RockETS.csv"
-#define DATA_LOG_COL_NAME "RTC Time,Rocket State,Mission Time (ms), Main Loop Use (%),Main Detect,Main Fire,Drogue Detect,Drogue Fire,Barometer Temperature (degC),Air Density (Kg/m^3),Barometer Altitude (m),AGL Altitude (m),Estimated Altitude (m),Estimated Vertical Speed (m/s),Estimated Vertical Acceleration (m/s/s)\n"
+#define DATA_LOG_COL_NAME "RTC Time,Rocket State,Mission Time (ms), Main Loop Use (%),Main Detect,Main Fire,Drogue Detect,Drogue Fire,Barometer Temperature (degC),Air Density (Kg/m^3),Speed of Sound (m/s),Barometer Altitude (m),AGL Altitude (m),Estimated Altitude (m),Estimated Vertical Speed (m/s),Estimated Vertical Acceleration (m/s/s)\n"
 #define DATA_LOG_HEADER "\nRockETS Data Logger Version 2.0\n"
 
 #define MAIN_LOOP_TIME 50 //period du timer principale en ms
