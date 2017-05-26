@@ -37,15 +37,16 @@
 #define CMD_ADC_D2                  0x10 // ADC D2 conversion
 
 #define AIR_MOLAR_MASS            0.0289644 // kg par mol
-#define GAZ_CONSTANT              8.31447
-
+#define GAZ_CONSTANT              8.3144621
+#define COEFF_LAPLACE_BIATOM      1.4
 /******************************************************************************/
 /*                             Type  Prototype                                */
 /******************************************************************************/
 typedef struct Barometer_s {
   float pressure;                    // Calibrated pressure
   float temperature;             // Calibrated temperature where 2000 = 20.00°C
-  float Air_Density;            // air density value
+  float Air_Density;            // air density value, perfect gas
+  float Sound_Speed;            // speed of sound, perfect gas
 
   uint64_t baro_temp;                 // Container for temporary data
 
