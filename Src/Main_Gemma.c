@@ -86,6 +86,25 @@ void separateDecimalValue(float_t value, int16_t * buff) {
   }
 }
 
+
+/*********************************************************************************************
+ * separateDecimalValue() separe ans deux integer la partie decimal et unité d'un float
+ *
+ * ARGUMENTS :
+ *    - float
+ *    - int *
+ *
+ * RETURN :
+ *    - void
+ *
+ *********************************************************************************************/
+void ftos(float input, char * output){
+
+  sprintf(output, "%f", input);
+
+}
+
+
 /*********************************************************************************************
  * Get_State_String() recoit la RocketsVar et transmet dans une string l'état du vol
  *
@@ -765,18 +784,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
       cJSON_AddItemToObject(root_json, "ID",
                             cJSON_CreateString(Telemetry.Telemetry_ID));
-      cJSON_AddItemToObject(root_json, "State",
+      cJSON_AddItemToObject(root_json, "Rocket_State",
                             cJSON_CreateString(Telemetry.Rocket_State_String));
 
-      cJSON_AddItemToObject(root_json, "Time Stamp", cJSON_CreateString(Telemetry.Time_String_Telemetry));
+      cJSON_AddItemToObject(root_json, "Time_Stamp", cJSON_CreateString(Telemetry.Time_String_Telemetry));
 
       cJSON_AddItemToObject(root_json, "Sensors", measures_json);
 
       cJSON_AddItemToObject(measures_json, "Altimeter", altimeter_json);
 
-      cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
-                              Altimeter.AGL_Altitude);
 
+      sprintf(float_buffer, "%6.6f", Altimeter.AGL_Altitude);
+      cJSON_AddItemToObject(altimeter_json, "Altitude_AGL",
+                               cJSON_CreateString(float_buffer));
+/*
       cJSON_AddNumberToObject(altimeter_json, "Estimated_Altitude",
                               Altimeter.Filtered_Altitude);
 
@@ -785,8 +806,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
       cJSON_AddNumberToObject(altimeter_json, "Estimated_Acceleration",
                               Altimeter.Filtered_Acceleration);
-
+*/
       Telemetry.TX_JSON_string = cJSON_PrintUnformatted((root_json));
+      //cJSON_PrintPreallocated()
 
       //realloc JSON string with another case to add "\n"
       Telemetry.TX_JSON_Base_Station = malloc(
@@ -799,13 +821,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
                             strlen(Telemetry.TX_JSON_Base_Station));
       Telemetry.Busy = 1;
 
-      //free(Telemetry.TX_JSON_string);
       cJSON_Delete(root_json);
     }
 
     /***************************************************
      * CANBUS comm
-     ***************************************************
+     ***************************************************/
      if(!(loop_counter%20)){
      CanTx_msg.Data[0] = 'a';
      CanTx_msg.Data[1] = 'b';
@@ -823,7 +844,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
 
 
-     ***************************************************
+     /***************************************************
      * update rocket state
      ***************************************************/
     State_Manager(&RocketsVar);
@@ -1053,25 +1074,21 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         memcpy(&Inertial_Station.Fix_Type, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.Fix_Type));
         break;
-      case CAN_GPS_LOCKED_ID:
-        memcpy(&Inertial_Station.GPS_locked, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.GPS_locked));
-        break;
       case CAN_GPS_N_SATELLITE_ID:
         memcpy(&Inertial_Station.GPS_N_satellite, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.GPS_N_satellite));
         break;
       case CAN_ACCELERATION_X_ID:
-        memcpy(&Inertial_Station.x_acceleration, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.x_acceleration));
+        memcpy(&Inertial_Station.accel_x, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_x));
         break;
       case CAN_ACCELERATION_Y_ID:
-        memcpy(&Inertial_Station.y_acceleration, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.y_acceleration));
+        memcpy(&Inertial_Station.accel_y, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_y));
         break;
       case CAN_ACCELERATION_Z_ID:
-        memcpy(&Inertial_Station.z_acceleration, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.z_acceleration));
+        memcpy(&Inertial_Station.accel_z, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_z));
         break;
       default:
         // do nothing

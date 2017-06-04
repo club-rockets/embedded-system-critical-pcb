@@ -124,6 +124,8 @@ CAN_FilterConfTypeDef CAN_FilterStruct;
 uint8_t USB_CDC_RX[64] = { 0 };
 uint8_t USB_CDC_TX[64] = { 0 };
 
+//telemetry
+char float_buffer[24] = {0};
 
 
 // devices global variable
@@ -150,6 +152,7 @@ void Init_rocket(Rockets_t * temp_rocket);
 void State_Manager(Rockets_t * temp_rocket);
 void separateDecimalValue(float_t value, int16_t * buff);
 void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff);
+void ftos(float input, char * output);
 
 #endif /* MAIN_GEMMA_H_ */
 

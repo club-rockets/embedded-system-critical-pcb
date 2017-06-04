@@ -25,23 +25,21 @@
  *
  *********************************************************************************************/
 void Init_Inertial_Station(Inertial_Station_t * temp_inertial_station) {
-  temp_inertial_station->roll_rate = 0;
-  temp_inertial_station->yaw = 0;
-  temp_inertial_station->yeild = 0;
+  temp_inertial_station->gyro_roll = 0;
+  temp_inertial_station->gyro_yaw = 0;
+  temp_inertial_station->gyro_yield = 0;
 
-  temp_inertial_station->x_acceleration = 0;
-  temp_inertial_station->y_acceleration = 0;
-  temp_inertial_station->z_acceleration = 0;
+  temp_inertial_station->accel_x = 0;
+  temp_inertial_station->accel_y = 0;
+  temp_inertial_station->accel_z = 0;
 
   temp_inertial_station->GPS_altitude = 0;
   temp_inertial_station->GPS_latitude = 0;
   temp_inertial_station->GPS_longitude = 0;
 
-  temp_inertial_station->GPS_locked = 0;
   temp_inertial_station->Fix_Type = 0;
   temp_inertial_station->GPS_N_satellite = 0;
 
-  temp_inertial_station->Comm_Is_Up = 0;
   temp_inertial_station->IsInitialized = 1;
 }
 
