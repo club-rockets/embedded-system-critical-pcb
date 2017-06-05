@@ -52,7 +52,7 @@ extern USART_HandleTypeDef husart1;
 extern UART_HandleTypeDef huart2;
 
 /******************************************************************************/
-/*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
+/*            Cortex-M4 Processor Interruption and Exception Handlers         */
 /******************************************************************************/
 
 /**
