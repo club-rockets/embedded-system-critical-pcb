@@ -152,7 +152,6 @@ void Init_rocket(Rockets_t * temp_rocket);
 void State_Manager(Rockets_t * temp_rocket);
 void separateDecimalValue(float_t value, int16_t * buff);
 void Get_State_String(Rockets_t * temp_rocket, uint8_t * buff);
-void ftos(float input, char * output);
 
 #endif /* MAIN_GEMMA_H_ */
 

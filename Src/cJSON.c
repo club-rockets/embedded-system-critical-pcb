@@ -1023,7 +1023,7 @@ static unsigned char *print(const cJSON * const item, cJSON_bool format, const i
     memset(buffer, 0, sizeof(buffer));
 
     /* create buffer */
-    buffer->buffer = (unsigned char*) hooks->allocate(256);
+    buffer->buffer = (unsigned char*) hooks->allocate(512);
     buffer->format = format;
     buffer->hooks = *hooks;
     if (buffer->buffer == NULL)

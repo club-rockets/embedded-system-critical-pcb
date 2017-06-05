@@ -2,10 +2,14 @@
 <cdtprojectproperties>
 <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
 <language name="S,s,asm">
+<includepath>src</includepath>
+<includepath>Libraries/CMSIS/Include</includepath>
+<includepath>Libraries/Device/STM32F4xx/Include</includepath>
+<includepath>Libraries/STM32F4xx_StdPeriph_Driver/inc</includepath>
 
 </language>
 <language name="C Source File">
-<includepath>Inc</includepath>
+<includepath workspace_path="true">/Flight_Computer/Inc</includepath>
 <includepath>Drivers/STM32F4xx_HAL_Driver/Inc</includepath>
 <includepath>Drivers/STM32F4xx_HAL_Driver/Inc/Legacy</includepath>
 <includepath>Middlewares/Third_Party/FatFs/src/drivers</includepath>
@@ -14,6 +18,8 @@
 <includepath>Drivers/CMSIS/Include</includepath>
 <includepath>Middlewares/ST/STM32_USB_Device_Library/Core/Inc</includepath>
 <includepath>Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc</includepath>
+<includepath>D:\WORKSPACE\TrueStudio WorkSpace\Flight_Computer\Src</includepath>
+<includepath>D:\WORKSPACE\TrueStudio WorkSpace\Flight_Computer\Inc</includepath>
 
 </language>
 <language name="Object File">
@@ -22,6 +28,15 @@
 </section>
 <section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
 <language name="S,s,asm">
+<macro>
+<name>STM32F4XX</name><value/>
+</macro>
+<macro>
+<name>STM32F40XX</name><value/>
+</macro>
+<macro>
+<name>USE_STDPERIPH_DRIVER</name><value/>
+</macro>
 
 </language>
 <language name="C Source File">
@@ -39,6 +54,12 @@
 </macro>
 <macro>
 <name>STM32F407xx</name><value/>
+</macro>
+<macro>
+<name>STM32F4XX</name><value/>
+</macro>
+<macro>
+<name>STM32F40XX</name><value/>
 </macro>
 
 </language>

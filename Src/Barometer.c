@@ -262,5 +262,5 @@ void Compute_Air_Density(Barometer_t * temp_barometer) {
  *
  *********************************************************************************************/
 void Compute_Sound_Speed(Barometer_t * temp_barometer) {
-  temp_barometer->Sound_Speed = sqrtf(COEFF_LAPLACE_BIATOM * GAZ_CONSTANT * temp_barometer->temperature / AIR_MOLAR_MASS);
+  temp_barometer->Sound_Speed = sqrtf(COEFF_LAPLACE_BIATOM * GAZ_CONSTANT * (273.15 + temp_barometer->temperature) / AIR_MOLAR_MASS);
 }

@@ -54,7 +54,7 @@ typedef struct Inertial_Station_s {
   float GPS_altitude;
 
   uint32_t GPS_N_satellite;
-  uint32_t Fix_Type;
+  uint32_t GPS_Fix_Type;
 
   float gyro_roll;
   float gyro_yaw;

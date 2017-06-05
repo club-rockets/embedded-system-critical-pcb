@@ -88,24 +88,6 @@ void separateDecimalValue(float_t value, int16_t * buff) {
 
 
 /*********************************************************************************************
- * separateDecimalValue() separe ans deux integer la partie decimal et unité d'un float
- *
- * ARGUMENTS :
- *    - float
- *    - int *
- *
- * RETURN :
- *    - void
- *
- *********************************************************************************************/
-void ftos(float input, char * output){
-
-  sprintf(output, "%f", input);
-
-}
-
-
-/*********************************************************************************************
  * Get_State_String() recoit la RocketsVar et transmet dans une string l'état du vol
  *
  * ARGUMENTS :
@@ -424,8 +406,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         /***************************************************
          * read/write des modification hardware
          ***************************************************/
-        LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
         Buzzer.Buzzer_enable = 1;
 
         /***************************************************
@@ -438,12 +420,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
           LED.Status_LED_Main_Armed = 1;
         } else if (Drogue_Parachute.Ejection_Charge_Detect
             && !Main_Parachute.Ejection_Charge_Detect) {
-          Buzzer.Buzzer_mode = 2;
+          Buzzer.Buzzer_mode = 1;
           LED.Status_LED_Drogue_Armed = 1;
           LED.Status_LED_Main_Armed = 0;
         } else if (!Drogue_Parachute.Ejection_Charge_Detect
             && Main_Parachute.Ejection_Charge_Detect) {
-          Buzzer.Buzzer_mode = 1;
+          Buzzer.Buzzer_mode = 2;
           LED.Status_LED_Drogue_Armed = 0;
           LED.Status_LED_Main_Armed = 1;
         } else {
@@ -465,11 +447,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         /***************************************************
          * read/write des modification hardware
          ***************************************************/
-        LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
+        LED.Critical_LED4 = 1;
+        LED.Critical_LED3 = 1;
         Buzzer.Buzzer_enable = 0;
         Telemetry.Loop_Step = 1;  //each 4x main loop
-
         break;
 
         /*******************************************************************
@@ -481,9 +462,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       case POWERED_ASCENT:
 
         /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
+
+        /***************************************************
          * detection du burnout apres delay ultrasonic
-         * enlever le IF s'il y a un accelerometre dans
-         * le filtre de kalman
          ***************************************************/
         if (RocketsVar.Mission_Time > Altimeter.Ultrasonic_Delay) {
           Burnout_Detection(&Altimeter);
@@ -502,7 +487,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 0;
+        LED.Critical_LED3 = 1;
+
+        /***************************************************
+         * Enregistrement du temps au burnout
+         ***************************************************/
         Altimeter.Burnout_Time = RocketsVar.Mission_Time;
         break;
 
@@ -515,8 +504,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       case COASTING_ASCENT:
 
         /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
+
+        /***************************************************
          *	detection d'apogee apres delais supersonic
-         *  avec un accelerometre, tester pour enlever dly
          ***************************************************/
         if (RocketsVar.Mission_Time > Altimeter.Ultrasonic_Delay) {
           Apogee_Detection(&Altimeter);
@@ -535,7 +529,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         /***************************************************
          * read/write des modification hardware
          ***************************************************/
-        LED.Critical_LED4 = 0;
+        LED.Critical_LED4 = 1;
         LED.Critical_LED3 = 1;
 
         /***************************************************
@@ -551,6 +545,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case DROGUE_DEPLOYMENT:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 1;
+        LED.Critical_LED3 = 1;
 
         /***************************************************
          * delai d'ejection du drogue apres l'apogee
@@ -573,6 +573,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case DROGUE_DESCENT:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
         break;
 
         /*******************************************************************
@@ -606,6 +612,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case MAIN_DESCENT:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
         break;
 
         /*******************************************************************
@@ -615,6 +627,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case LANDING:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 1;
+        LED.Critical_LED3 = 1;
         break;
 
         /*******************************************************************
@@ -624,6 +642,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case RECOVERY:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 0;
+        LED.Critical_LED3 = 0;
         Telemetry.Loop_Step = 100;
 
         break;
@@ -635,6 +659,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          *
          *******************************************************************/
       case PICKEDUP:
+
+        /***************************************************
+         * read/write des modification hardware
+         ***************************************************/
+        LED.Critical_LED4 = 1;
+        LED.Critical_LED3 = 1;
         break;
 
         /*******************************************************************
@@ -740,6 +770,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      * translate rocket state in string with state name
      ***************************************************/
     Get_State_String(&RocketsVar, Rocket_State_String);
+
     /***************************************************
      * SD save in buffer
      ***************************************************/
@@ -767,6 +798,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON * root_json;
       cJSON * measures_json;
       cJSON * altimeter_json;
+      cJSON * SGP_json;
+      cJSON * Parachute_json;
 
       sprintf(
               (char*) (Telemetry.Time_String_Telemetry),
@@ -781,7 +814,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       root_json = cJSON_CreateObject();
       measures_json = cJSON_CreateObject();
       altimeter_json = cJSON_CreateObject();
+      SGP_json = cJSON_CreateObject();
+      Parachute_json = cJSON_CreateObject();
 
+      /**********************************************
+       * JSON root
+       *********************************************/
       cJSON_AddItemToObject(root_json, "ID",
                             cJSON_CreateString(Telemetry.Telemetry_ID));
       cJSON_AddItemToObject(root_json, "Rocket_State",
@@ -789,15 +827,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
       cJSON_AddItemToObject(root_json, "Time_Stamp", cJSON_CreateString(Telemetry.Time_String_Telemetry));
 
+      /**********************************************
+       * add sensor field to root
+       *********************************************/
       cJSON_AddItemToObject(root_json, "Sensors", measures_json);
 
+      /**********************************************
+       * add altimeter field to sensor
+       *********************************************/
       cJSON_AddItemToObject(measures_json, "Altimeter", altimeter_json);
 
+      cJSON_AddNumberToObject(altimeter_json, "Altitude_AGL",
+                              Altimeter.AGL_Altitude);
 
-      sprintf(float_buffer, "%6.6f", Altimeter.AGL_Altitude);
-      cJSON_AddItemToObject(altimeter_json, "Altitude_AGL",
-                               cJSON_CreateString(float_buffer));
-/*
       cJSON_AddNumberToObject(altimeter_json, "Estimated_Altitude",
                               Altimeter.Filtered_Altitude);
 
@@ -806,23 +848,87 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
       cJSON_AddNumberToObject(altimeter_json, "Estimated_Acceleration",
                               Altimeter.Filtered_Acceleration);
-*/
-      Telemetry.TX_JSON_string = cJSON_PrintUnformatted((root_json));
-      //cJSON_PrintPreallocated()
 
-      //realloc JSON string with another case to add "\n"
+      /**********************************************
+       * add SGP field to sensor
+       *********************************************/
+      cJSON_AddItemToObject(measures_json, "SGP", SGP_json);
+
+      cJSON_AddNumberToObject(SGP_json, "Accel_x",
+                              Inertial_Station.accel_x);
+
+      cJSON_AddNumberToObject(SGP_json, "Accel_y",
+                              Inertial_Station.accel_y);
+
+      cJSON_AddNumberToObject(SGP_json, "Accel_z",
+                              Inertial_Station.accel_z);
+
+      cJSON_AddNumberToObject(SGP_json, "Gyro_Yaw",
+                              Inertial_Station.gyro_yaw);
+
+      cJSON_AddNumberToObject(SGP_json, "Gyro_Yield",
+                              Inertial_Station.gyro_yield);
+
+      cJSON_AddNumberToObject(SGP_json, "Gyro_Roll",
+                              Inertial_Station.gyro_roll);
+
+      cJSON_AddNumberToObject(SGP_json, "GPS_Fix_Type",
+                              Inertial_Station.GPS_Fix_Type);
+
+      cJSON_AddNumberToObject(SGP_json, "GPS_Nb_Sat",
+                              Inertial_Station.GPS_N_satellite);
+
+      cJSON_AddNumberToObject(SGP_json, "GPS_longitude",
+                              Inertial_Station.GPS_longitude);
+
+      cJSON_AddNumberToObject(SGP_json, "GPS_latitude",
+                              Inertial_Station.GPS_latitude);
+
+      cJSON_AddNumberToObject(SGP_json, "GPS_altitude",
+                              Inertial_Station.GPS_altitude);
+
+      /**********************************************
+       * add parachute field to sensor
+       *********************************************/
+      cJSON_AddItemToObject(measures_json, "Parachute", Parachute_json);
+
+      cJSON_AddBoolToObject(Parachute_json,"Main_Detect", (int)Main_Parachute.Ejection_Charge_Detect);
+
+      cJSON_AddBoolToObject(Parachute_json,"Drogue_Detect", (int)Drogue_Parachute.Ejection_Charge_Detect);
+
+      cJSON_AddBoolToObject(Parachute_json,"Main_Fired", (int)Main_Parachute.Ejection_Charge_Fire);
+
+      cJSON_AddBoolToObject(Parachute_json,"Drogue_Fired", (int)Drogue_Parachute.Ejection_Charge_Fire);
+
+      /**********************************************
+       * creat json string, to be sent by rfd900
+       *********************************************/
+      Telemetry.TX_JSON_string = cJSON_PrintUnformatted((root_json));
+
+      /**********************************************
+       * realloc JSON string with
+       * another case to add "\n", add more padding
+       *********************************************/
       Telemetry.TX_JSON_Base_Station = malloc(
           strlen(Telemetry.TX_JSON_string) + 10);
       strcpy(Telemetry.TX_JSON_Base_Station, Telemetry.TX_JSON_string);
       free(Telemetry.TX_JSON_string);
       strcat(Telemetry.TX_JSON_Base_Station, "\n");
 
+      /**********************************************
+       * send data with DMA
+       * set telemetry.busy to true
+       * busy is reset in uart_TX callback
+       * upon completion
+       *********************************************/
       HAL_UART_Transmit_DMA(&huart2, (uint8_t *) Telemetry.TX_JSON_Base_Station,
                             strlen(Telemetry.TX_JSON_Base_Station));
       Telemetry.Busy = 1;
-
       cJSON_Delete(root_json);
-    }
+    }/**********************************************
+     * realloc JSON string with another case to add "\n"
+     *********************************************/
+
 
     /***************************************************
      * CANBUS comm
@@ -836,19 +942,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      CanTx_msg.Data[5] = 'f';
      CanTx_msg.Data[6] = 'g';
      CanTx_msg.Data[7] = 'h';
-     CanTx_msg.StdId = 0x111;
+     CanTx_msg.StdId = 0x001;
      CanTx_msg.DLC = 2;
 
-     HAL_CAN_Transmit(&hcan2, 20);
+     HAL_CAN_Transmit(&hcan2, 5);
      }
-
-
-
-     /***************************************************
-     * update rocket state
-     ***************************************************/
-    State_Manager(&RocketsVar);
-    loop_counter++;
 
     /***************************************************
      * USB SERIAL COM PORT - programation de l'altimetre
@@ -965,6 +1063,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     }
 
     /***************************************************
+    * update rocket state
+    ***************************************************/
+   State_Manager(&RocketsVar);
+   loop_counter++;
+
+
+    /***************************************************
      * Compute main loop time tick-toc
      ***************************************************/
     RocketsVar.Main_Compute_Time =
@@ -1071,8 +1176,8 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
                sizeof(Inertial_Station.GPS_altitude));
         break;
       case CAN_GPS_FIX_TYPE_ID:
-        memcpy(&Inertial_Station.Fix_Type, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.Fix_Type));
+        memcpy(&Inertial_Station.GPS_Fix_Type, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.GPS_Fix_Type));
         break;
       case CAN_GPS_N_SATELLITE_ID:
         memcpy(&Inertial_Station.GPS_N_satellite, hcan->pRxMsg->Data,
