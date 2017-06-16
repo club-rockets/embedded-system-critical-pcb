@@ -60,6 +60,7 @@ typedef struct Inertial_Station_s {
   float gyro_yaw;
   float gyro_yield;
 
+  uint32_t canbus_comm_error;
   uint32_t IsInitialized;
 
 } Inertial_Station_t;

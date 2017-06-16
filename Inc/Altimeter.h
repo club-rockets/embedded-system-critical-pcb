@@ -39,10 +39,10 @@ typedef struct Altimeter_s {
   float LP_Filter_Altitude;     // altitude filtered with low pass filter 4th order
 
   float Flight_Altitude_trigger; 	//altitude at which the state switch to in flight
-  float Launch_Acceleration_trigger; 	//altitude at which the state switch to in flight
+  float Launch_Acceleration_trigger; 	//acceleration at which the state switch to launch
   float Main_Ejection_Altitude;
   float Ultrasonic_Delay;       // delay after launch to prevent false trigger
-  float Apogee_Ejection_Delay;  // post-apogee delay
+  float Apogee_Ejection_Delay;  // post-apogee delay in ms
 
   float Apogee_Altitude;    // measure of the apogee
   float Apogee_Estimation;  // estimation de l'apogee en real time, free fall body

@@ -227,23 +227,23 @@ void Init_Barometer(Barometer_t * temp_barometer) {
  * given by the barometer
  *
  * ARGUMENTS :
- * 		-
+ * 		- barometer pressure in mbar
  *
  * RETURN :
- * 		- void
+ * 		- altitude in meter
  *********************************************************************************************/
 float Convert_mBar_To_Altitude(float pressure) {
   return (pow(pressure / 1013.25, 1 / 5.255) - 1) * -44330.769230769;
 }
 
 /*********************************************************************************************
- *
- *
+ * calcul la density de l'air ambiant a partir des donnee du baro
+ * utilise la loi des gaz parfaits
  * ARGUMENTS :
- *    -
+ *    - barometer handle
  *
  * RETURN :
- *    -
+ *    - void
  *
  *********************************************************************************************/
 void Compute_Air_Density(Barometer_t * temp_barometer) {
@@ -252,13 +252,13 @@ void Compute_Air_Density(Barometer_t * temp_barometer) {
 }
 
 /*********************************************************************************************
- *
- *
+ * calcul la vitesse du son dans l'air
+ * utilise la loi des gaz parfaits
  * ARGUMENTS :
- *    -
+ *    - barometer handle
  *
  * RETURN :
- *    -
+ *    - void
  *
  *********************************************************************************************/
 void Compute_Sound_Speed(Barometer_t * temp_barometer) {

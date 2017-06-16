@@ -40,6 +40,7 @@ void Init_Inertial_Station(Inertial_Station_t * temp_inertial_station) {
   temp_inertial_station->GPS_Fix_Type = 0;
   temp_inertial_station->GPS_N_satellite = 0;
 
+  temp_inertial_station->canbus_comm_error = 0;
   temp_inertial_station->IsInitialized = 1;
 }
 

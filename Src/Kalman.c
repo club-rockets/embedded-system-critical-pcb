@@ -117,11 +117,11 @@ void Init_Kalman(Kalman_t * temp_kalman) {
  *********************************************************************************************/
 void Update_Kalman(Kalman_t * temp_kalman) {
   uint32_t loop_counter = 0;
-
+/*
   float32_t temp1_2x1[2] = { 0 };
   arm_matrix_instance_f32 temp1_2x1_f32 = { .numCols = 1, .numRows = 2, .pData =
       temp1_2x1, };
-
+*/
   float32_t temp1_3x1[2] = { 0 };
   arm_matrix_instance_f32 temp1_3x1_f32 = { .numCols = 1, .numRows = 3, .pData =
       temp1_3x1, };
@@ -133,7 +133,7 @@ void Update_Kalman(Kalman_t * temp_kalman) {
   float32_t temp2_3x3[9] = { 0 };
   arm_matrix_instance_f32 temp2_3x3_f32 = { .numCols = 3, .numRows = 3, .pData =
       temp2_3x3, };
-
+/*
   float32_t temp1_2x3[6] = { 0 };
   arm_matrix_instance_f32 temp1_2x3_f32 = { .numCols = 3, .numRows = 2, .pData =
       temp1_2x3, };
@@ -149,7 +149,7 @@ void Update_Kalman(Kalman_t * temp_kalman) {
   float32_t temp1_3x2[6] = { 0 };
   arm_matrix_instance_f32 temp1_3x2_f32 = { .numCols = 2, .numRows = 3, .pData =
       temp1_3x2, };
-
+*/
   float32_t temp1_1x3[3] = { 0 };
   arm_matrix_instance_f32 temp1_1x3_f32 = { .numCols = 3, .numRows = 1, .pData =
       temp1_1x3, };

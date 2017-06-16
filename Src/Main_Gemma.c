@@ -86,7 +86,6 @@ void separateDecimalValue(float_t value, int16_t * buff) {
   }
 }
 
-
 /*********************************************************************************************
  * Get_State_String() recoit la RocketsVar et transmet dans une string l'état du vol
  *
@@ -232,10 +231,16 @@ void State_Manager(Rockets_t * temp_rocket) {
       break;
 
     case DROGUE_DESCENT:
-      if (Altimeter.AGL_Altitude < Altimeter.Main_Ejection_Altitude) {
-        RocketsVar.Rocket_State = MAIN_DEPLOYMENT;
+      //if main ejection altitude is detected
+      //starts 2sec after drogue deployment
+      if (temp_rocket->Altimeter->AGL_Altitude
+          < temp_rocket->Altimeter->Main_Ejection_Altitude
+          && temp_rocket->Mission_Time
+              > temp_rocket->Altimeter->Apogee_Time + 2000
+                  + temp_rocket->Altimeter->Apogee_Ejection_Delay) {
+        temp_rocket->Rocket_State = MAIN_DEPLOYMENT;
       } else {
-        RocketsVar.Rocket_State = DROGUE_DESCENT;
+        temp_rocket->Rocket_State = DROGUE_DESCENT;
       }
 
       break;
@@ -260,15 +265,17 @@ void State_Manager(Rockets_t * temp_rocket) {
       break;
 
     case LANDING:
-      //lorsque la vitesse arrete d'augmenter negativement, l'acceleration passe de neg. a pos.
-      if (temp_rocket->Altimeter->Filtered_Acceleration > 0) {
+      //lorsque la vitesse n'est plus negative,
+      if (temp_rocket->Altimeter->Filtered_Velocity > 0) {
         temp_rocket->Rocket_State = RECOVERY;
       }
       break;
 
     case RECOVERY:
       //si la position varie, la vitesse va varier...
-      if (fabs(temp_rocket->Altimeter->Filtered_Velocity) > 5) {
+      //marche tres mal, mais bon ^(-_-)^
+      if (fabs(
+          temp_rocket->Altimeter->Filtered_Velocity) > PICKUP_VELOCITY_TRIGGER) {
         temp_rocket->Rocket_State = PICKEDUP;
       }
       break;
@@ -319,7 +326,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       /*******************************************************************
        * initialisation des modules
        * le tim1 est arreter pour laisser le temps...
-       *
+       * (surtout pour le rfd900 en raison des delais de boot)
        *
        *******************************************************************/
       case INITIALISATION:
@@ -361,6 +368,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         hcan2.pTxMsg = &CanTx_msg;
         hcan2.pRxMsg = &CanRx_msg;
 
+        //canbus filter settings
         CAN_FilterStruct.FilterIdHigh = 0x0000; /* Upper 16bit filter ID */
         CAN_FilterStruct.FilterIdLow = 0x0000; /* Filter lower 16bit ID */
         CAN_FilterStruct.FilterMaskIdHigh = 0x0000; /* Upper 16bit filter mask */
@@ -373,6 +381,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         CAN_FilterStruct.BankNumber = 14; /* Start slave bank filter (?) */
 
         HAL_CAN_ConfigFilter(&hcan2, &CAN_FilterStruct); /* Initialize filter */
+        __HAL_CAN_ENABLE_IT(&hcan2, CAN_IT_FMP0);
 
         //init de fatfs et de la SD
         if (BSP_SD_Init() == 0) {
@@ -392,6 +401,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
           f_close(&data_file);
         }
 
+        //start telemetry receive callback
+        HAL_UART_Receive_IT(&huart2, (uint8_t*) Telemetry.RX_JSON_string, 2);
+        //restart main timer after init
         HAL_TIM_Base_Start_IT(htim);
         break;
 
@@ -407,7 +419,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
         Buzzer.Buzzer_enable = 1;
 
         /***************************************************
@@ -448,7 +459,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
         Buzzer.Buzzer_enable = 0;
         Telemetry.Loop_Step = 1;  //each 4x main loop
         break;
@@ -465,7 +475,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
 
         /***************************************************
          * detection du burnout apres delay ultrasonic
@@ -487,7 +496,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
 
         /***************************************************
          * Enregistrement du temps au burnout
@@ -507,7 +515,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
 
         /***************************************************
          *	detection d'apogee apres delais supersonic
@@ -530,7 +537,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
 
         /***************************************************
          * Enregistrement du temps à l'apogee
@@ -550,7 +556,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
 
         /***************************************************
          * delai d'ejection du drogue apres l'apogee
@@ -578,7 +583,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
         break;
 
         /*******************************************************************
@@ -593,7 +597,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
 
         /***************************************************
          * ejection du main parachute
@@ -617,7 +620,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
         break;
 
         /*******************************************************************
@@ -632,7 +634,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
         break;
 
         /*******************************************************************
@@ -647,7 +648,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 0;
-        LED.Critical_LED3 = 0;
         Telemetry.Loop_Step = 100;
 
         break;
@@ -664,7 +664,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
          * read/write des modification hardware
          ***************************************************/
         LED.Critical_LED4 = 1;
-        LED.Critical_LED3 = 1;
         break;
 
         /*******************************************************************
@@ -705,21 +704,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     //overwrite pressure data only
 
     /*
-    if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
-    Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
-    % sizeof(PRESSURE_POINTS_HYPERION)];
-    }
-    */
+     if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
+     Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
+     % sizeof(PRESSURE_POINTS_HYPERION)];
+     }
+     */
     /*
-    if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
+     if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION_SONIC[loop_counter
-    % sizeof(PRESSURE_POINTS_HYPERION) >> 2];
-    }
+     % sizeof(PRESSURE_POINTS_HYPERION) >> 2];
+     }
 
-    if(loop_counter < sizeof(PRESSURE_POINT_AMAROK)>>2){
-    Barometer.pressure = PRESSURE_POINT_AMAROK[loop_counter%sizeof(PRESSURE_POINTS_HYPERION)];
-    }
-    */
+     if(loop_counter < sizeof(PRESSURE_POINT_AMAROK)>>2){
+     Barometer.pressure = PRESSURE_POINT_AMAROK[loop_counter%sizeof(PRESSURE_POINTS_HYPERION)];
+     }
+     */
 
     /***************************************************
      * update de l'altimetre et de kalman
@@ -762,6 +761,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
     /***************************************************
      * update real time clock variable before save
+     * get_time must be called before get_date
+     * see get_date comments
      ***************************************************/
     HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -785,9 +786,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Drogue_Parachute.Ejection_Charge_Detect,
         Drogue_Parachute.Ejection_Charge_Fire, Barometer.temperature,
         Barometer.Air_Density, Barometer.Sound_Speed,
-        Altimeter.Barometric_Altitude,
-        Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude,
-        Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
+        Altimeter.Barometric_Altitude, Altimeter.AGL_Altitude,
+        Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity,
+        Altimeter.Filtered_Acceleration);
 
     f_puts((TCHAR*) Save_String, &data_file);
 
@@ -800,14 +801,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON * altimeter_json;
       cJSON * SGP_json;
       cJSON * Parachute_json;
+      cJSON * Settings_json;
 
-      sprintf(
-              (char*) (Telemetry.Time_String_Telemetry),
-              "20%02d-%02d-%02dT%02d:%02d:%02d:%02lu",
-              sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes,
-              sTime.Seconds, sTime.SubSeconds * 100 / sTime.SecondFraction);
-
-      HAL_UART_Receive_IT(&huart2, (uint8_t*) Telemetry.RX_JSON_string, 2);
+      sprintf((char*) (Telemetry.Time_String_Telemetry),
+              "20%02d-%02d-%02dT%02d:%02d:%02d:%02lu", sDate.Year, sDate.Month,
+              sDate.Date, sTime.Hours, sTime.Minutes, sTime.Seconds,
+              sTime.SubSeconds * 100 / sTime.SecondFraction);
 
       Get_State_String(&RocketsVar, (uint8_t*) Telemetry.Rocket_State_String);
 
@@ -816,6 +815,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       altimeter_json = cJSON_CreateObject();
       SGP_json = cJSON_CreateObject();
       Parachute_json = cJSON_CreateObject();
+      Settings_json = cJSON_CreateObject();
 
       /**********************************************
        * JSON root
@@ -825,7 +825,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON_AddItemToObject(root_json, "Rocket_State",
                             cJSON_CreateString(Telemetry.Rocket_State_String));
 
-      cJSON_AddItemToObject(root_json, "Time_Stamp", cJSON_CreateString(Telemetry.Time_String_Telemetry));
+      cJSON_AddItemToObject(
+          root_json, "Time_Stamp",
+          cJSON_CreateString(Telemetry.Time_String_Telemetry));
 
       /**********************************************
        * add sensor field to root
@@ -854,17 +856,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
        *********************************************/
       cJSON_AddItemToObject(measures_json, "SGP", SGP_json);
 
-      cJSON_AddNumberToObject(SGP_json, "Accel_x",
-                              Inertial_Station.accel_x);
+      cJSON_AddNumberToObject(SGP_json, "Accel_x", Inertial_Station.accel_x);
 
-      cJSON_AddNumberToObject(SGP_json, "Accel_y",
-                              Inertial_Station.accel_y);
+      cJSON_AddNumberToObject(SGP_json, "Accel_y", Inertial_Station.accel_y);
 
-      cJSON_AddNumberToObject(SGP_json, "Accel_z",
-                              Inertial_Station.accel_z);
+      cJSON_AddNumberToObject(SGP_json, "Accel_z", Inertial_Station.accel_z);
 
-      cJSON_AddNumberToObject(SGP_json, "Gyro_Yaw",
-                              Inertial_Station.gyro_yaw);
+      cJSON_AddNumberToObject(SGP_json, "Gyro_Yaw", Inertial_Station.gyro_yaw);
 
       cJSON_AddNumberToObject(SGP_json, "Gyro_Yield",
                               Inertial_Station.gyro_yield);
@@ -892,13 +890,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
        *********************************************/
       cJSON_AddItemToObject(measures_json, "Parachute", Parachute_json);
 
-      cJSON_AddBoolToObject(Parachute_json,"Main_Detect", (int)Main_Parachute.Ejection_Charge_Detect);
+      cJSON_AddBoolToObject(Parachute_json, "Main_Detect",
+                            (int )Main_Parachute.Ejection_Charge_Detect);
 
-      cJSON_AddBoolToObject(Parachute_json,"Drogue_Detect", (int)Drogue_Parachute.Ejection_Charge_Detect);
+      cJSON_AddBoolToObject(Parachute_json, "Drogue_Detect",
+                            (int )Drogue_Parachute.Ejection_Charge_Detect);
 
-      cJSON_AddBoolToObject(Parachute_json,"Main_Fired", (int)Main_Parachute.Ejection_Charge_Fire);
+      cJSON_AddBoolToObject(Parachute_json, "Main_Fired",
+                            (int )Main_Parachute.Ejection_Charge_Fire);
 
-      cJSON_AddBoolToObject(Parachute_json,"Drogue_Fired", (int)Drogue_Parachute.Ejection_Charge_Fire);
+      cJSON_AddBoolToObject(Parachute_json, "Drogue_Fired",
+                            (int )Drogue_Parachute.Ejection_Charge_Fire);
+
+      /**********************************************
+       * add ejection setting field to sensor
+       *********************************************/
+      cJSON_AddItemToObject(measures_json, "Ejection_Settings", Settings_json);
+
+      cJSON_AddNumberToObject(Settings_json, "Drogue_Ejection_Delay",
+                              Altimeter.Apogee_Ejection_Delay);
+
+      cJSON_AddNumberToObject(Settings_json, "Ultrasonic_Delay",
+                              Altimeter.Ultrasonic_Delay);
+
+      cJSON_AddNumberToObject(Settings_json, "Main_Ejection_Altitude",
+                              Altimeter.Main_Ejection_Altitude);
 
       /**********************************************
        * creat json string, to be sent by rfd900
@@ -925,15 +941,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
                             strlen(Telemetry.TX_JSON_Base_Station));
       Telemetry.Busy = 1;
       cJSON_Delete(root_json);
-    }/**********************************************
-     * realloc JSON string with another case to add "\n"
-     *********************************************/
-
+    }
 
     /***************************************************
      * CANBUS comm
      ***************************************************/
-     if(!(loop_counter%20)){
+     if (!(loop_counter % 20)) {
      CanTx_msg.Data[0] = 'a';
      CanTx_msg.Data[1] = 'b';
      CanTx_msg.Data[2] = 'c';
@@ -942,132 +955,126 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      CanTx_msg.Data[5] = 'f';
      CanTx_msg.Data[6] = 'g';
      CanTx_msg.Data[7] = 'h';
-     CanTx_msg.StdId = 0x001;
-     CanTx_msg.DLC = 2;
+     CanTx_msg.StdId = 0x033;
+     CanTx_msg.DLC = 8;
 
-     HAL_CAN_Transmit(&hcan2, 5);
+     if(HAL_CAN_Transmit(&hcan2, 1) == HAL_OK){
+       LED.Critical_LED3 = 1;
+     }
+     else{
+       LED.Critical_LED3 = 1;
+     }
      }
 
-    /***************************************************
+     /***************************************************
      * USB SERIAL COM PORT - programation de l'altimetre
      ***************************************************/
 
-    //code test pour programmer l'horloge
-    //est presentement utilisé avec des script sur teraterm
+    //code test pour programmer l'horloge et les setting d'ejection
+    //utilise un des fonction matlab comprisent dans le
+    //dossier critical_gui
     //rx is done elsewhere in usb_cdc_if.c
     if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
       volatile int val = 0;
-      if (USB_CDC_RX[0] == 'd' && USB_CDC_RX[1] == 'a' && USB_CDC_RX[2] == 't'
-          && USB_CDC_RX[3] == 'e') {
-        HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        sDate.Date = atoi(&USB_CDC_RX[4]);
+      if (USB_CDC_RX[0] == 'a') {
+        sDate.Year = atoi((char*) &USB_CDC_RX[1]);
         HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        itoa(sDate.Date, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
-        USB_CDC_RX[5] = 0;
-        USB_CDC_RX[6] = 0;
+        //HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+        //itoa(sDate.Date, USB_CDC_TX, 10);
+        //CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
       }
 
-      if (USB_CDC_RX[0] == 'h' && USB_CDC_RX[1] == 'o' && USB_CDC_RX[2] == 'u'
-          && USB_CDC_RX[3] == 'r') {
-        HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        sTime.Hours = atoi(&USB_CDC_RX[4]);
-        HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        itoa(sTime.Hours, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
-        USB_CDC_RX[0] = 0;
-        USB_CDC_RX[3] = 0;
-        USB_CDC_RX[4] = 0;
-        USB_CDC_RX[5] = 0;
-        USB_CDC_RX[6] = 0;
-      }
-
-      if (USB_CDC_RX[0] == 'y' && USB_CDC_RX[1] == 'e' && USB_CDC_RX[2] == 'a'
-          && USB_CDC_RX[3] == 'r') {
-        HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        sDate.Year = atoi(&USB_CDC_RX[4]);
+      if (USB_CDC_RX[0] == 'b') {
+        sDate.Date = atoi((char*) &USB_CDC_RX[1]);
         HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        itoa(sDate.Year, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
-        USB_CDC_RX[5] = 0;
-        USB_CDC_RX[6] = 0;
       }
 
-      if (USB_CDC_RX[0] == 'm' && USB_CDC_RX[1] == 'o' && USB_CDC_RX[2] == 'n'
-          && USB_CDC_RX[3] == 't' && USB_CDC_RX[4] == 'h') {
-        HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        sDate.Month = atoi(&USB_CDC_RX[5]);
+      if (USB_CDC_RX[0] == 'c') {
+        sDate.Month = atoi((char*) &USB_CDC_RX[1]);
         HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-        itoa(sDate.Month, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
-        USB_CDC_RX[5] = 0;
-        USB_CDC_RX[6] = 0;
       }
 
-      if (USB_CDC_RX[0] == 'm' && USB_CDC_RX[1] == 'i'
-          && USB_CDC_RX[2] == 'n') {
-        HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        sTime.Minutes = atoi(&USB_CDC_RX[3]);
+      if (USB_CDC_RX[0] == 'd') {
+        sTime.Hours = atoi((char*) &USB_CDC_RX[1]);
         HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        itoa(sTime.Minutes, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
-        USB_CDC_RX[5] = 0;
-        USB_CDC_RX[6] = 0;
       }
 
-      if (USB_CDC_RX[0] == 's' && USB_CDC_RX[1] == 'e'
-          && USB_CDC_RX[2] == 'c') {
-        HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        sTime.Seconds = atoi(&USB_CDC_RX[3]);
+      if (USB_CDC_RX[0] == 'e') {
+        sTime.Minutes = atoi((char*) &USB_CDC_RX[1]);
         HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-        itoa(sTime.Seconds, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
+        USB_CDC_RX[3] = 0;
+        USB_CDC_RX[4] = 0;
       }
 
-      if (USB_CDC_RX[0] == 'u' && USB_CDC_RX[1] == 'd') {
-        val = atoi(&USB_CDC_RX[2]);
-        Altimeter.Ultrasonic_Delay = (float)val;
-        itoa(val, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+      if (USB_CDC_RX[0] == 'f') {
+        sTime.Seconds = atoi((char*) &USB_CDC_RX[1]);
+        HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
+        USB_CDC_RX[3] = 0;
+        USB_CDC_RX[4] = 0;
       }
 
-      if (USB_CDC_RX[0] == 'a' && USB_CDC_RX[1] == 'd') {
-        val = atoi(&USB_CDC_RX[2]);
-        Altimeter.Apogee_Ejection_Delay = (float)val;
-        itoa(val, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+      if (USB_CDC_RX[0] == 'g') {
+        val = atoi((char*) &USB_CDC_RX[1]);
+        Altimeter.Ultrasonic_Delay = (float) val;
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
+        USB_CDC_RX[3] = 0;
+        USB_CDC_RX[4] = 0;
       }
 
-      if (USB_CDC_RX[0] == 'm' && USB_CDC_RX[1] == 'a') {
-        val = atoi(&USB_CDC_RX[2]);
-        Altimeter.Main_Ejection_Altitude = (float)val;
-        itoa(val, USB_CDC_TX, 10);
-        CDC_Transmit_FS(USB_CDC_TX, strlen(USB_CDC_TX));
+      if (USB_CDC_RX[0] == 'h') {
+        val = atoi((char*) &USB_CDC_RX[1]);
+        Altimeter.Apogee_Ejection_Delay = (float) val;
         USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
+        USB_CDC_RX[3] = 0;
+        USB_CDC_RX[4] = 0;
+      }
+
+      if (USB_CDC_RX[0] == 'i') {
+        val = atoi((char*) &USB_CDC_RX[1]);
+        Altimeter.Main_Ejection_Altitude = (float) val;
+        USB_CDC_RX[0] = 0;
+        USB_CDC_RX[1] = 0;
+        USB_CDC_RX[2] = 0;
+        USB_CDC_RX[3] = 0;
+        USB_CDC_RX[4] = 0;
       }
     }
 
     /***************************************************
-    * update rocket state
-    ***************************************************/
-   State_Manager(&RocketsVar);
-   loop_counter++;
-
+     * update rocket state
+     ***************************************************/
+    State_Manager(&RocketsVar);
+    loop_counter++;
 
     /***************************************************
      * Compute main loop time tick-toc
@@ -1109,11 +1116,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     f_open(&data_file, FILENAME, FA_OPEN_EXISTING | FA_WRITE);
     f_lseek(&data_file, f_size(&data_file));
 
-    //save user setting to Backup SRAM
+    //save user settings to Backup SRAM
     //this ram sector wont erase upon power cycling
+    //if a cmos battery is present
     Set_Backup_Apogee_Delay(&Backup_Settings, Altimeter.Apogee_Ejection_Delay);
-    Set_Backup_Altitude_Main(&Backup_Settings, Altimeter.Main_Ejection_Altitude);
+    Set_Backup_Altitude_Main(&Backup_Settings,
+                             Altimeter.Main_Ejection_Altitude);
     Set_Backup_Sonic_Delay(&Backup_Settings, Altimeter.Ultrasonic_Delay);
+
     Save_Backup_SRAM(&Backup_Settings);
 
     save_counter++;
@@ -1123,7 +1133,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
    *	TIM3 callback
    *	called by timer handler opon number of mainloop count, clock is tim1 output
    *	value is 20 x 50ms = 1seconde
-   *	time can change upon discovery mode
+   *
+   *	***not used***
    *
    * ARGUMENTS :
    * 		-
@@ -1139,8 +1150,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 }
 
 /*********************************************************************************************
- *	CAN2 RX callback
- *
+ * CAN2 RX callback
+ * gere les request de data des autres module et la reception de data de ces modules
  *
  * ARGUMENTS :
  * 		-
@@ -1200,6 +1211,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         break;
     }
 
+    //prepare for next reception
     __HAL_CAN_ENABLE_IT(hcan, CAN_IT_FMP0);
 
   }
@@ -1238,7 +1250,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 }
 
 /*********************************************************************************************
- * interrupt for end of DMA xfer on usart
+ * interrupt for end of DMA xfer on usart2 (RFD900)
+ * free tx string and clear tx_busy flag
  *
  * ARGUMENTS :
  *    -
