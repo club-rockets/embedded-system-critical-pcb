@@ -22,8 +22,8 @@
 /******************************************************************************/
 /*                                Define                                      */
 /******************************************************************************/
-#define CAN_ROCKET_STATE_REQ_ID   0x001
-#define CAN_ROCKET_STATE_ID       0x011
+#define CAN_ROCKET_STATE_REQ_ID   0x001 //sent by SGP
+#define CAN_ROCKET_STATE_ID       0x011 //sent to SGP
 
 #define CAN_GPS_LONGITUDE_ID      0x211
 #define CAN_GPS_LATITUDE_ID       0x212
@@ -35,9 +35,9 @@
 #define CAN_ACCELERATION_Y_ID     0x222
 #define CAN_ACCELERATION_Z_ID     0x223
 
-#define CAN_GYRO_PITCH_ID         0x221
-#define CAN_GYRO_YAW_ID           0x222
-#define CAN_GYRO_ROLL_ID          0x223
+#define CAN_GYRO_YIELD_ID         0x231
+#define CAN_GYRO_YAW_ID           0x232
+#define CAN_GYRO_ROLL_ID          0x233
 
 
 

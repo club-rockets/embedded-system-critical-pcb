@@ -946,25 +946,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     /***************************************************
      * CANBUS comm
      ***************************************************/
-     if (!(loop_counter % 20)) {
-     CanTx_msg.Data[0] = 'a';
-     CanTx_msg.Data[1] = 'b';
-     CanTx_msg.Data[2] = 'c';
-     CanTx_msg.Data[3] = 'd';
-     CanTx_msg.Data[4] = 'e';
-     CanTx_msg.Data[5] = 'f';
-     CanTx_msg.Data[6] = 'g';
-     CanTx_msg.Data[7] = 'h';
-     CanTx_msg.StdId = 0x033;
-     CanTx_msg.DLC = 8;
 
+
+     /*
+     CanTx_msg.StdId = CAN_GPS_LONGITUDE_ID;
+     CanTx_msg.DLC = 0;
      if(HAL_CAN_Transmit(&hcan2, 1) == HAL_OK){
        LED.Critical_LED3 = 1;
      }
      else{
+       LED.Critical_LED3 = 0;
+     }
+
+
+     CanTx_msg.StdId = CAN_GPS_LATITUDE_ID;
+     CanTx_msg.DLC = 0;
+     if(HAL_CAN_Transmit(&hcan2, 1) == HAL_OK){
        LED.Critical_LED3 = 1;
      }
+     else{
+       LED.Critical_LED3 = 0;
      }
+
+     CanTx_msg.StdId = CAN_GPS_ALTITUDE_ID;
+     CanTx_msg.DLC = 0;
+     if(HAL_CAN_Transmit(&hcan2, 1) == HAL_OK){
+       LED.Critical_LED3 = 1;
+     }
+     else{
+       LED.Critical_LED3 = 0;
+     }
+    */
 
      /***************************************************
      * USB SERIAL COM PORT - programation de l'altimetre
@@ -1073,7 +1085,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     /***************************************************
      * update rocket state
      ***************************************************/
+    //select next state
     State_Manager(&RocketsVar);
+    //toggle motherboard heartbeat with every loop
+    if(!(loop_counter%10)){
+      LED.Status_LED_Proc_Good ^= 1;
+    }
+
+    //update gps fix led status
+    if(Inertial_Station.GPS_Fix_Type >= 3){
+      LED.Status_LED_GPS_fixed = 1;
+    }
+    //loop counter incrementation
     loop_counter++;
 
     /***************************************************
@@ -1163,6 +1186,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
 
   if (hcan->Instance == CAN2) {
+    //toggle led when entering callback
+    LED.Critical_LED3 ^= 1;
 
     switch (hcan->pRxMsg->StdId) {
 
@@ -1206,8 +1231,21 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         memcpy(&Inertial_Station.accel_z, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.accel_z));
         break;
+      case CAN_GYRO_YIELD_ID:
+        memcpy(&Inertial_Station.gyro_yield, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_x));
+        break;
+      case CAN_GYRO_YAW_ID:
+        memcpy(&Inertial_Station.gyro_yaw, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_y));
+        break;
+      case CAN_GYRO_ROLL_ID:
+        memcpy(&Inertial_Station.gyro_roll, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.accel_z));
+        break;
       default:
         // do nothing
+        // bad case
         break;
     }
 
