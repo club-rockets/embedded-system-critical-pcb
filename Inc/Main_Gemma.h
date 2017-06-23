@@ -47,7 +47,7 @@
 /*                                Define                                      */
 /******************************************************************************/
 #define FILENAME "RockETS.csv"
-#define DATA_LOG_COL_NAME "RTC Time,Rocket State,Mission Time (ms), Main Loop Use (%),Main Detect,Main Fire,Drogue Detect,Drogue Fire,Barometer Temperature (degC),Air Density (Kg/m^3),Speed of Sound (m/s),Barometer Altitude (m),AGL Altitude (m),Estimated Altitude (m),Estimated Vertical Speed (m/s),Estimated Vertical Acceleration (m/s/s)\n"
+#define DATA_LOG_COL_NAME "RTC Time,Rocket State,Mission Time (ms), Main Loop Use (%),Main Detect,Main Fire,Drogue Detect,Drogue Fire,Barometer Temperature (degC),Air Density (Kg/m^3),Speed of Sound (m/s),Barometer Altitude (m),AGL Altitude (m),Estimated Altitude (m),Estimated Vertical Speed (m/s),Estimated Vertical Acceleration (m/s/s),bezier_cp1_x (m),bezier_cp1_y (m),bezier_cp2_x (m),bezier_cp2_y (m),bezier_fap_x (m),bezier_fap_y (m),bezier_tip_x (m),bezier_tip_y (m),motorcmd_left (rad),motorcmd_right (rad),motorpos_left (rad), motorpos_right (rad), GPS ground_speed (m/s),GPS heading of motion (deg),GPS longitude (deg),GPS latitude (deg),GPS altitude (m),GPS fixe type, SGP state,SGP horizontal speed (m),SGP vertical speed (m),SGP descent time (m/s),SGP post tracking\n"
 #define DATA_LOG_HEADER "\nRockETS Data Logger Version 2.0\n"
 
 #define MAIN_LOOP_TIME 50           //period du timer principale en ms
@@ -113,7 +113,7 @@ FRESULT res;        // FatFs function common result code
 uint32_t byteread, bytewritten;         // File R/W count
 
 // buffer pour sauvegarder des donnees
-uint8_t Save_String[512] = { 0 };
+uint8_t Save_String[1024] = { 0 };
 uint8_t Rocket_State_String[64] = { 0 };
 
 // buffer pour comm CANbus

@@ -777,18 +777,52 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      ***************************************************/
     sprintf(
         (char*) (Save_String),
-        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f\n",
-        sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes,
-        sTime.Seconds, Rocket_State_String, RocketsVar.Mission_Time,
+        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lu,%lu,%f,%f,%lu,%lu,%lu,%f,%f,%f,%f\n",
+        sDate.Year,
+        sDate.Month,
+        sDate.Date,
+        sTime.Hours,
+        sTime.Minutes,
+        sTime.Seconds,
+        Rocket_State_String,
+        RocketsVar.Mission_Time,
         ((RocketsVar.Main_Compute_Time * 100) / RocketsVar.Main_Loop_Time_Step),
         Main_Parachute.Ejection_Charge_Detect,
         Main_Parachute.Ejection_Charge_Fire,
         Drogue_Parachute.Ejection_Charge_Detect,
-        Drogue_Parachute.Ejection_Charge_Fire, Barometer.temperature,
-        Barometer.Air_Density, Barometer.Sound_Speed,
-        Altimeter.Barometric_Altitude, Altimeter.AGL_Altitude,
-        Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity,
-        Altimeter.Filtered_Acceleration);
+        Drogue_Parachute.Ejection_Charge_Fire,
+        Barometer.temperature,
+        Barometer.Air_Density,
+        Barometer.Sound_Speed,
+        Altimeter.Barometric_Altitude,
+        Altimeter.AGL_Altitude,
+        Altimeter.Filtered_Altitude,
+        Altimeter.Filtered_Velocity,
+        Altimeter.Filtered_Acceleration,
+        Inertial_Station.bezier_cp1_x,
+        Inertial_Station.bezier_cp1_y,
+        Inertial_Station.bezier_cp2_x,
+        Inertial_Station.bezier_cp2_y,
+        Inertial_Station.bezier_fap_x,
+        Inertial_Station.bezier_fap_y,
+        Inertial_Station.bezier_tip_x,
+        Inertial_Station.bezier_tip_y,
+        Inertial_Station.motorcmd_left,
+        Inertial_Station.motorcmd_right,
+        Inertial_Station.motorpos_left,
+        Inertial_Station.motorpos_right,
+        Inertial_Station.GPS_ground_speed,
+        Inertial_Station.GPS_heading_of_motion,
+        Inertial_Station.GPS_longitude,
+        Inertial_Station.GPS_latitude,
+        Inertial_Station.GPS_altitude,
+        Inertial_Station.GPS_Fix_Type,
+        Inertial_Station.SGP_state,
+        Inertial_Station.SGP_horizontal_speed,
+        Inertial_Station.SGP_vertical_speed,
+        Inertial_Station.SGP_descent_time,
+        Inertial_Station.SGP_post_tracking
+    );
 
     f_puts((TCHAR*) Save_String, &data_file);
 
@@ -1009,6 +1043,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'c') {
@@ -1019,6 +1054,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'd') {
@@ -1029,6 +1065,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'e') {
@@ -1039,6 +1076,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'f') {
@@ -1049,6 +1087,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'g') {
@@ -1059,6 +1098,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'h') {
@@ -1069,6 +1109,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
 
       if (USB_CDC_RX[0] == 'i') {
@@ -1079,6 +1120,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         USB_CDC_RX[2] = 0;
         USB_CDC_RX[3] = 0;
         USB_CDC_RX[4] = 0;
+        USB_CDC_RX[5] = 0;
       }
     }
 
@@ -1096,6 +1138,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
     if(Inertial_Station.GPS_Fix_Type >= 3){
       LED.Status_LED_GPS_fixed = 1;
     }
+    else{
+      LED.Status_LED_GPS_fixed = 0;
+    }
+
     //loop counter incrementation
     loop_counter++;
 
@@ -1199,6 +1245,14 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         HAL_CAN_Transmit(&hcan2, 1);
         break;
 
+      case CAN_ROCKET_ALTITUDE_REQ_ID:
+        CanTx_msg.StdId = CAN_ROCKET_ALTITUDE_ID;
+        CanTx_msg.DLC = sizeof(Altimeter.AGL_Altitude);
+        memcpy(hcan->pTxMsg->Data, &Altimeter.AGL_Altitude,
+               sizeof(Altimeter.AGL_Altitude));
+        HAL_CAN_Transmit(&hcan2, 1);
+        break;
+
       case CAN_GPS_LONGITUDE_ID:
         memcpy(&Inertial_Station.GPS_longitude, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.GPS_longitude));
@@ -1210,6 +1264,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
       case CAN_GPS_ALTITUDE_ID:
         memcpy(&Inertial_Station.GPS_altitude, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.GPS_altitude));
+        Inertial_Station.GPS_altitude *= 0.001;
         break;
       case CAN_GPS_FIX_TYPE_ID:
         memcpy(&Inertial_Station.GPS_Fix_Type, hcan->pRxMsg->Data,
@@ -1233,15 +1288,92 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         break;
       case CAN_GYRO_YIELD_ID:
         memcpy(&Inertial_Station.gyro_yield, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.accel_x));
+               sizeof(Inertial_Station.gyro_yield));
         break;
       case CAN_GYRO_YAW_ID:
         memcpy(&Inertial_Station.gyro_yaw, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.accel_y));
+               sizeof(Inertial_Station.gyro_yaw));
         break;
       case CAN_GYRO_ROLL_ID:
         memcpy(&Inertial_Station.gyro_roll, hcan->pRxMsg->Data,
-               sizeof(Inertial_Station.accel_z));
+               sizeof(Inertial_Station.gyro_roll));
+        break;
+      case CAN_BEZIER_CP1_X:
+        memcpy(&Inertial_Station.bezier_cp1_x, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_cp1_x));
+        break;
+      case CAN_BEZIER_CP1_Y:
+        memcpy(&Inertial_Station.bezier_cp1_y, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_cp1_y));
+        break;
+      case CAN_BEZIER_CP2_X:
+        memcpy(&Inertial_Station.bezier_cp2_x, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_cp2_x));
+        break;
+      case CAN_BEZIER_CP2_Y:
+        memcpy(&Inertial_Station.bezier_cp2_y, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_cp2_y));
+        break;
+      case CAN_BEZIER_FAP_X:
+        memcpy(&Inertial_Station.bezier_fap_x, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_fap_x));
+        break;
+      case CAN_BEZIER_FAP_Y:
+        memcpy(&Inertial_Station.bezier_fap_y, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_fap_y));
+        break;
+      case CAN_BEZIER_TIP_X:
+        memcpy(&Inertial_Station.bezier_tip_x, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_tip_x));
+        break;
+      case CAN_BEZIER_TIP_Y:
+        memcpy(&Inertial_Station.bezier_tip_y, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.bezier_tip_y));
+        break;
+      case CAN_MOTORCMD_LEFT:
+        memcpy(&Inertial_Station.motorcmd_left, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.motorcmd_left));
+        break;
+      case CAN_MOTORCMD_RIGHT:
+        memcpy(&Inertial_Station.motorcmd_right, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.motorcmd_right));
+        break;
+      case CAN_MOTORPOS_LEFT:
+        memcpy(&Inertial_Station.motorpos_left, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.motorpos_left));
+        break;
+      case CAN_MOTORPOS_RIGHT:
+        memcpy(&Inertial_Station.motorpos_right, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.motorpos_right));
+        break;
+      case CAN_GPS_HEADING_MOTION_ID:
+        memcpy(&Inertial_Station.GPS_heading_of_motion, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.GPS_heading_of_motion));
+        break;
+      case CAN_GPS_GROUND_SPEED_ID:
+        memcpy(&Inertial_Station.GPS_ground_speed, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.GPS_ground_speed));
+        Inertial_Station.GPS_ground_speed *= 0.00001;
+        break;
+      case CAN_SGP_STATE:
+        memcpy(&Inertial_Station.SGP_state, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.SGP_state));
+        break;
+      case CAN_SGP_DESCENTTIME:
+        memcpy(&Inertial_Station.SGP_descent_time, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.SGP_descent_time));
+        break;
+      case CAN_SGP_HORZSPEED:
+        memcpy(&Inertial_Station.SGP_horizontal_speed, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.SGP_horizontal_speed));
+        break;
+      case CAN_SGP_VERTSPEED:
+        memcpy(&Inertial_Station.SGP_vertical_speed, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.SGP_vertical_speed));
+        break;
+      case CAN_SGP_POSTTRACKING:
+        memcpy(&Inertial_Station.SGP_post_tracking, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.SGP_post_tracking));
         break;
       default:
         // do nothing

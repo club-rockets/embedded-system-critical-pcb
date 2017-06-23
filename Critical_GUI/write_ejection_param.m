@@ -9,7 +9,7 @@ clc;
 % speed doesnt really matter, virtual comm port
 s = serial(comport);
 s.DataTerminalReady= 'off';
-set(s,'InputBufferSize',50);
+set(s,'InputBufferSize',100);
 set(s,'BaudRate',921600);
 set(s,'Parity','none');
 set(s,'StopBits',1);
