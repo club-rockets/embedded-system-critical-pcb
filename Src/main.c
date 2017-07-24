@@ -235,7 +235,7 @@ static void MX_NVIC_Init(void)
   HAL_NVIC_SetPriority(USART2_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   /* SDIO_IRQn interrupt configuration */
   //HAL_NVIC_SetPriority(SDIO_IRQn, 1, 0);

@@ -4,6 +4,7 @@ function write_ejection_param(comport, ultrasonic_delay, apogee_ejection_delay, 
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc;
+delete(instrfindall);
 
 % Ouverture du port de communication
 % speed doesnt really matter, virtual comm port
@@ -30,7 +31,7 @@ string = strcat('h',string);
 fwrite(s, string, 'uint8');
 pause(0.1);
 
-%write main ejection apogee
+%write main ejection ejection
 string = num2str(main_ejection_altitude);
 string = strcat('i',string);
 fwrite(s, string, 'uint8');

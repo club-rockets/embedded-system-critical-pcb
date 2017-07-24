@@ -10,15 +10,20 @@ c = clock;
 
 % Ouverture du port de communication
 % speed doesnt really matter, virtual comm port
+% s = serial(comport);
+% s.DataTerminalReady= 'off';
+% set(s,'InputBufferSize',50);
+% set(s,'BaudRate',921600);
+% set(s,'Parity','none');
+% set(s,'StopBits',1);
+% set(s,'DataBits',8);
+% set(s,'Terminator','');
+% set(s, 'Timeout', 100);
+% fopen(s);
+delete(instrfind);
+pause(0.1);
 s = serial(comport);
-s.DataTerminalReady= 'off';
-set(s,'InputBufferSize',50);
-set(s,'BaudRate',921600);
-set(s,'Parity','none');
-set(s,'StopBits',1);
-set(s,'DataBits',8);
-set(s,'Terminator','');
-set(s, 'Timeout', 100);
+set(s,'BaudRate',9600,'DataBits', 8, 'Parity', 'none','StopBits', 1, 'FlowControl', 'none','Terminator','CR/LF');
 fopen(s);
 
 %write year

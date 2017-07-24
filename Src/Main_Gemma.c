@@ -702,13 +702,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
 
     //simulator
     //overwrite pressure data only
-
-    /*
+/*
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION) >> 2) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION[loop_counter
      % sizeof(PRESSURE_POINTS_HYPERION)];
      }
-     */
+*/
+
     /*
      if (loop_counter < sizeof(PRESSURE_POINTS_HYPERION_SONIC)) {
      Barometer.pressure = PRESSURE_POINTS_HYPERION_SONIC[loop_counter
@@ -718,7 +718,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      if(loop_counter < sizeof(PRESSURE_POINT_AMAROK)>>2){
      Barometer.pressure = PRESSURE_POINT_AMAROK[loop_counter%sizeof(PRESSURE_POINTS_HYPERION)];
      }
-     */
+*/
 
     /***************************************************
      * update de l'altimetre et de kalman
@@ -777,7 +777,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
      ***************************************************/
     sprintf(
         (char*) (Save_String),
-        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lu,%lu,%f,%f,%lu,%lu,%lu,%f,%f,%f,%f\n",
+        "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lu,%lu,%f,%f,%lu,%lu,%lu,%f,%f,%f,%f,%lu,%f,%f,%f,%f,%f,%f\n",
         sDate.Year,
         sDate.Month,
         sDate.Date,
@@ -821,7 +821,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
         Inertial_Station.SGP_horizontal_speed,
         Inertial_Station.SGP_vertical_speed,
         Inertial_Station.SGP_descent_time,
-        Inertial_Station.SGP_post_tracking
+        Inertial_Station.SGP_post_tracking,
+        Inertial_Station.MTI_sample_time,
+        Inertial_Station.accel_x,
+        Inertial_Station.accel_y,
+        Inertial_Station.accel_z,
+        Inertial_Station.gyro_roll,
+        Inertial_Station.gyro_yaw,
+        Inertial_Station.gyro_yield
     );
 
     f_puts((TCHAR*) Save_String, &data_file);
@@ -916,9 +923,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim) {
       cJSON_AddNumberToObject(SGP_json, "GPS_latitude",
                               Inertial_Station.GPS_latitude);
 
-      cJSON_AddNumberToObject(SGP_json, "GPS_altitude",
-                              Inertial_Station.GPS_altitude);
+      cJSON_AddNumberToObject(SGP_json, "SGP_state",
+                              Inertial_Station.SGP_state);
 
+      cJSON_AddNumberToObject(SGP_json, "SGP_descent_time",
+                              Inertial_Station.SGP_descent_time);
+
+      cJSON_AddNumberToObject(SGP_json, "SGP_horz_speed",
+                              Inertial_Station.SGP_horizontal_speed);
+
+      cJSON_AddNumberToObject(SGP_json, "SGP_vert_speed",
+                              Inertial_Station.SGP_vertical_speed);
+
+      cJSON_AddNumberToObject(SGP_json, "SGP_post_tracking",
+                              Inertial_Station.SGP_post_tracking);
+
+      cJSON_AddNumberToObject(SGP_json, "SGP_error_pos_motor_left",
+                              Inertial_Station.motorcmd_left - Inertial_Station.motorpos_left);
+
+      cJSON_AddNumberToObject(SGP_json, "SGP_error_pos_motor_left",
+                              Inertial_Station.motorcmd_right - Inertial_Station.motorpos_right);
       /**********************************************
        * add parachute field to sensor
        *********************************************/
@@ -1274,6 +1298,10 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
         memcpy(&Inertial_Station.GPS_N_satellite, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.GPS_N_satellite));
         break;
+      case CAN_MTI_SAMPLE_TIME_ID:
+        memcpy(&Inertial_Station.MTI_sample_time, hcan->pRxMsg->Data,
+               sizeof(Inertial_Station.MTI_sample_time));
+        break;
       case CAN_ACCELERATION_X_ID:
         memcpy(&Inertial_Station.accel_x, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.accel_x));
@@ -1349,6 +1377,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan) {
       case CAN_GPS_HEADING_MOTION_ID:
         memcpy(&Inertial_Station.GPS_heading_of_motion, hcan->pRxMsg->Data,
                sizeof(Inertial_Station.GPS_heading_of_motion));
+        Inertial_Station.GPS_heading_of_motion  *= 0.00001;
         break;
       case CAN_GPS_GROUND_SPEED_ID:
         memcpy(&Inertial_Station.GPS_ground_speed, hcan->pRxMsg->Data,

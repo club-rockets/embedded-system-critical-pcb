@@ -45,6 +45,8 @@
 #define CAN_GYRO_YAW_ID           0x232
 #define CAN_GYRO_ROLL_ID          0x233
 
+#define CAN_MTI_SAMPLE_TIME_ID    0x241
+
 #define CAN_SGP_STATE             0x300
 #define CAN_SGP_DESCENTTIME       0x301
 #define CAN_SGP_HORZSPEED         0x302
@@ -66,10 +68,13 @@
 #define CAN_MOTORPOS_RIGHT        0x403
 
 
+
 /******************************************************************************/
 /*                              Type  Prototype                               */
 /******************************************************************************/
 typedef struct Inertial_Station_s {
+  uint32_t MTI_sample_time;
+
   float accel_x;
   float accel_y;
   float accel_z;
