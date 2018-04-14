@@ -9,15 +9,19 @@
  Copyright (c) 2016-2017
  All rights reserved
 
- RockETS, Montreal
- Ecole de Technologies Superieures
+ RockETS, Montréal
+ École de Technologies Supérieure
  *********************************************************************************************/
 
 #ifndef TELEMETRY_H_
 #define TELEMETRY_H_
 
+#include <stdint.h>
+#include <string.h>
+
+#include "Message_Defs.h"
+
 #include "stm32f4xx_hal.h"
-#include "string.h"
 
 /******************************************************************************/
 /*                                Define                                      */
@@ -26,17 +30,22 @@
 /******************************************************************************/
 /*                              Type  Prototype                               */
 /******************************************************************************/
-typedef struct Telemetry_s {
-  char   Telemetry_ID[16];
-  unsigned int Loop_Step;
-  unsigned int Busy;
-  char   Rocket_State_String[64];
-  char   Time_String_Telemetry[32];
-  char   RX_JSON_string[64];
-  char * TX_JSON_string;//must be char for JSON to work properly, does mem leak
-  char * TX_JSON_Base_Station; //temp pour rajouter \n
-  uint32_t isInitialized;
-} Telemetry_t;
+typedef struct MessageQueueNode_t MessageQueueNode_t;
+typedef struct Telemetry_t Telemetry_t;
+
+struct MessageQueueNode_t {
+	uint8_t* data;
+	MessageQueueNode_t* next;
+};
+
+struct Telemetry_t {
+	char Telemetry_ID[16];
+	unsigned int Loop_Step;
+	unsigned int Busy;
+	uint8_t* rx;
+	MessageQueueNode_t* queue;
+	uint32_t isInitialized;
+};
 
 /******************************************************************************/
 /*                             Global variable                                */
@@ -46,5 +55,8 @@ typedef struct Telemetry_s {
 /*                             Function prototype                             */
 /******************************************************************************/
 void Init_Telemetry(Telemetry_t * temp_telemetry);
+
+void send_data_message(Telemetry_t* telemetry, uint8_t messageid, ...);
+void process_queue(Telemetry_t* telemetry);
 
 #endif //TELEMETRY_H_

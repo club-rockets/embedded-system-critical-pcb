@@ -40,7 +40,6 @@
 #include "sdio.h"
 #include "can.h"
 #include "usb_device.h"
-#include "cJSON.h"
 #include "User_Setting_Backup.h"
 
 /******************************************************************************/
