@@ -24,7 +24,7 @@
 #define MSG_FORMAT_EJECTION_SETTINGS "fff"
 #define MSG_FORMAT_ALTIMETER_DATA    "ffff"
 #define MSG_FORMAT_ACCELERATION      "fff"
-#define MSG_FORMAT_GYRO              "fff"
+#define MSG_FORMAT_GYRO              "ffff"
 #define MSG_FORMAT_ROCKET_STATE      "b"
 #define MSG_FORMAT_PARACHUTE_STATE   "bb"
 #define MSG_FORMAT_GPS_METADATA      "bb"

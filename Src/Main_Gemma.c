@@ -418,7 +418,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
          ***************************************************/
         sprintf(
             (char*)(Save_String),
-            "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lu,%lu,%f,%f,%lu,%lu,%lu,%f,%f,%f,%f,%lu,%f,%f,%f,%f,%f,%f\n",
+            "20%02d-%02d-%02dT%02d:%02d:%02d,%s,%lu,%lu,%lu,%lu,%lu,%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%lu,%lu,%f,%f,%lu,%lu,%lu,%f,%f,%f,%f,%lu,%f,%f,%f,%f,%f,%f,%f\n",
             sDate.Year,
             sDate.Month,
             sDate.Date,
@@ -467,15 +467,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
             Inertial_Station.accel_x,
             Inertial_Station.accel_y,
             Inertial_Station.accel_z,
-            Inertial_Station.gyro_roll,
-            Inertial_Station.gyro_yaw,
-            Inertial_Station.gyro_yield);
+            Inertial_Station.gyro_q1,
+            Inertial_Station.gyro_q2,
+            Inertial_Station.gyro_q3,
+			Inertial_Station.gyro_q4);
 
         f_puts((TCHAR*)Save_String, &data_file);
 
         /***************************************************
      * Telemetrie
      ***************************************************/
+        if (!loop_counter % Telemetry.Alt_Loop_step) {
+        	send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
+        }
         if (!(loop_counter % Telemetry.Loop_Step)) {
             send_data_message(&Telemetry, MSG_ID_ROCKET_STATE, RocketsVar.Rocket_State);
 
@@ -490,7 +494,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
             /**********************************************
              * add altimeter field to sensor
              *********************************************/
-            send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
 
             /**********************************************
              * add SGP field to sensor
@@ -831,18 +834,23 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
         case CAN_ACCELERATION_Z_ID:
             memcpy(&Inertial_Station.accel_z, hcan->pRxMsg->Data,
                 sizeof(Inertial_Station.accel_z));
+            send_data_message(&Telemetry, MSG_ID_ACCELERATION, Inertial_Station.accel_x, Inertial_Station.accel_y, Inertial_Station.accel_z);
             break;
-        case CAN_GYRO_YIELD_ID:
-            memcpy(&Inertial_Station.gyro_yield, hcan->pRxMsg->Data,
-                sizeof(Inertial_Station.gyro_yield));
+        case CAN_GYRO_Q1_ID:
+            memcpy(&Inertial_Station.gyro_q1, hcan->pRxMsg->Data,
+                sizeof(Inertial_Station.gyro_q1));
             break;
-        case CAN_GYRO_YAW_ID:
-            memcpy(&Inertial_Station.gyro_yaw, hcan->pRxMsg->Data,
-                sizeof(Inertial_Station.gyro_yaw));
+        case CAN_GYRO_Q2_ID:
+            memcpy(&Inertial_Station.gyro_q2, hcan->pRxMsg->Data,
+                sizeof(Inertial_Station.gyro_q2));
             break;
-        case CAN_GYRO_ROLL_ID:
-            memcpy(&Inertial_Station.gyro_roll, hcan->pRxMsg->Data,
-                sizeof(Inertial_Station.gyro_roll));
+        case CAN_GYRO_Q3_ID:
+            memcpy(&Inertial_Station.gyro_q3, hcan->pRxMsg->Data,
+                sizeof(Inertial_Station.gyro_q3));
+        case CAN_GYRO_Q4_ID:
+			memcpy(&Inertial_Station.gyro_q4, hcan->pRxMsg->Data,
+				sizeof(Inertial_Station.gyro_q4));
+            send_data_message(&Telemetry, MSG_ID_GYRO, Inertial_Station.gyro_q1, Inertial_Station.gyro_q2, Inertial_Station.gyro_q3, Inertial_Station.gyro_q4);
             break;
         case CAN_BEZIER_CP1_X:
             memcpy(&Inertial_Station.bezier_cp1_x, hcan->pRxMsg->Data,

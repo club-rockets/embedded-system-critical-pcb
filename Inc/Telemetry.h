@@ -41,6 +41,7 @@ struct MessageQueueNode_t {
 struct Telemetry_t {
 	char Telemetry_ID[16];
 	unsigned int Loop_Step;
+	unsigned int Alt_Loop_Step;
 	unsigned int Busy;
 	uint8_t* rx;
 	MessageQueueNode_t* queue;

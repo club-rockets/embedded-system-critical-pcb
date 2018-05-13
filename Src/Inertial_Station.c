@@ -25,9 +25,10 @@
  *
  *********************************************************************************************/
 void Init_Inertial_Station(Inertial_Station_t * temp_inertial_station) {
-  temp_inertial_station->gyro_roll = 0;
-  temp_inertial_station->gyro_yaw = 0;
-  temp_inertial_station->gyro_yield = 0;
+  temp_inertial_station->gyro_q1 = 0;
+  temp_inertial_station->gyro_q2 = 0;
+  temp_inertial_station->gyro_q3 = 0;
+  temp_inertial_station->gyro_q4 = 0;
 
   temp_inertial_station->accel_x = 0;
   temp_inertial_station->accel_y = 0;

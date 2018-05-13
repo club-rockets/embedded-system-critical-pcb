@@ -44,9 +44,10 @@
 #define CAN_ACCELERATION_Y_ID     0x222
 #define CAN_ACCELERATION_Z_ID     0x223
 
-#define CAN_GYRO_YIELD_ID         0x231
-#define CAN_GYRO_YAW_ID           0x232
-#define CAN_GYRO_ROLL_ID          0x233
+#define CAN_GYRO_Q1_ID            0x231
+#define CAN_GYRO_Q2_ID            0x232
+#define CAN_GYRO_Q3_ID            0x233
+#define CAN_GYRO_Q4_ID            0x234
 
 #define CAN_MTI_SAMPLE_TIME_ID    0x241
 
@@ -91,9 +92,10 @@ typedef struct Inertial_Station_s {
     uint32_t GPS_N_satellite;
     uint32_t GPS_Fix_Type;
 
-    float gyro_roll;
-    float gyro_yaw;
-    float gyro_yield;
+    float gyro_q1;
+    float gyro_q2;
+    float gyro_q3;
+    float gyro_q4;
 
     float bezier_tip_x;
     float bezier_tip_y;

@@ -48,6 +48,7 @@ void Init_Telemetry(Telemetry_t* temp_telemetry)
     strcpy(temp_telemetry->Telemetry_ID, "Amarok");
     temp_telemetry->Busy = 0;
     temp_telemetry->Loop_Step = 20; // 1seconde
+    temp_telemetry->Alt_Loop_Step = 20; // 1seconde
     temp_telemetry->isInitialized = 1;
     temp_telemetry->queue = NULL;
 }
