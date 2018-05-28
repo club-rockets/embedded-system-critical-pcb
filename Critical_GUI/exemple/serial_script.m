@@ -1,5 +1,5 @@
 % Ouverture du port de communication
-s = serial('COM14');
+s = serial('/dev/ttyACM0');
 set(s,'BaudRate',520833);
 set(s,'StopBits',1);
 set(s,'DataBits',8);

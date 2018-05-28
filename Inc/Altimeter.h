@@ -21,10 +21,10 @@
 /*                                Define                                      */
 /******************************************************************************/
 #define APOGEE_EJECTION_DELAY_MS 	2000 //delais d'ejection apres la detection d'apogee en millisec
-#define ULTRASONIC_DELAY_MS 		  1000 //delais minimum apres le launch avant de pouvoir detection l'apogee en millisec
-#define LAUNCH_ACCEL_TRIGGER		  5 // valeur proportionnelle a l'accel qui declanche le launch state
-#define FLIGHT_ALTITUDE_TRIGGER		100 // altitude apres la detection du launch a laquelle on change d'etat en metre
-#define MAIN_EJECTION_ALTITUDE		333 //altitude de deploiement du MAIN chute en metre
+#define ULTRASONIC_DELAY_MS 		1000 //delais minimum apres le launch avant de pouvoir detection l'apogee en millisec
+#define LAUNCH_ACCEL_TRIGGER	 	   5 // valeur proportionnelle a l'accel qui declanche le launch state
+#define FLIGHT_ALTITUDE_TRIGGER      100 // altitude apres la detection du launch a laquelle on change d'etat en metre
+#define MAIN_EJECTION_ALTITUDE	 	 333 //altitude de deploiement du MAIN chute en metre
 
 /******************************************************************************/
 /*                              Type  Prototype                               */
@@ -47,10 +47,10 @@ typedef struct Altimeter_s {
   float Apogee_Altitude;    // measure of the apogee
   float Apogee_Estimation;  // estimation de l'apogee en real time, free fall body
 
-  uint32_t Burnout_Detected;    // burnout du moteur detecté
+  uint32_t Burnout_Detected;    // burnout du moteur detectï¿½
   uint32_t Burnout_Time;     // mission time at which engine burnout is reached in ms
 
-  uint32_t Apogee_Detected;     // apogee detecté
+  uint32_t Apogee_Detected;     // apogee detectï¿½
   uint32_t Apogee_Time;			    // mission time at which apogee is reached in ms
 
   uint32_t Initial_Altitude_Count;

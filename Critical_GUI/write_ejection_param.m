@@ -11,7 +11,7 @@ delete(instrfindall);
 s = serial(comport);
 s.DataTerminalReady= 'off';
 set(s,'InputBufferSize',100);
-set(s,'BaudRate',921600);
+set(s,'BaudRate',115200);
 set(s,'Parity','none');
 set(s,'StopBits',1);
 set(s,'DataBits',8);

@@ -28,8 +28,8 @@
  *********************************************************************************************/
 #include "Main_Gemma.h"
 
-void callback_rocket_state_switch();
-void callback_step_initialisation();
+void callback_rocket_state_step(TIM_HandleTypeDef* htim);
+void callback_step_initialisation(TIM_HandleTypeDef* htim);
 void callback_step_standby();
 void deploy_main();
 void deploy_drogue();
@@ -477,10 +477,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
         /***************************************************
      * Telemetrie
      ***************************************************/
-        if (!loop_counter % Telemetry.Alt_Loop_step) {
-        	send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
-        }
+
         if (!(loop_counter % Telemetry.Loop_Step)) {
+        	send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
             send_data_message(&Telemetry, MSG_ID_ROCKET_STATE, RocketsVar.Rocket_State);
 
             /**********************************************

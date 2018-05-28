@@ -145,6 +145,8 @@ char* _message_format(uint8_t messageid)
         return MSG_FORMAT_GPS_METADATA;
     case MSG_ID_GPS_DATA:
         return MSG_FORMAT_GPS_DATA;
+    case 0xF0:
+    	return "f";
     }
     return "";
 }
