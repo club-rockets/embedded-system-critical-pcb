@@ -470,7 +470,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
             Inertial_Station.gyro_q1,
             Inertial_Station.gyro_q2,
             Inertial_Station.gyro_q3,
-			Inertial_Station.gyro_q4);
+            Inertial_Station.gyro_q4);
 
         f_puts((TCHAR*)Save_String, &data_file);
 
@@ -479,7 +479,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
      ***************************************************/
 
         if (!(loop_counter % Telemetry.Loop_Step)) {
-        	send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
+            send_data_message(&Telemetry, MSG_ID_ALTIMETER_DATA, Altimeter.AGL_Altitude, Altimeter.Filtered_Altitude, Altimeter.Filtered_Velocity, Altimeter.Filtered_Acceleration);
             send_data_message(&Telemetry, MSG_ID_ROCKET_STATE, RocketsVar.Rocket_State);
 
             /**********************************************
@@ -846,9 +846,10 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
         case CAN_GYRO_Q3_ID:
             memcpy(&Inertial_Station.gyro_q3, hcan->pRxMsg->Data,
                 sizeof(Inertial_Station.gyro_q3));
+            break;
         case CAN_GYRO_Q4_ID:
-			memcpy(&Inertial_Station.gyro_q4, hcan->pRxMsg->Data,
-				sizeof(Inertial_Station.gyro_q4));
+            memcpy(&Inertial_Station.gyro_q4, hcan->pRxMsg->Data,
+                sizeof(Inertial_Station.gyro_q4));
             send_data_message(&Telemetry, MSG_ID_GYRO, Inertial_Station.gyro_q1, Inertial_Station.gyro_q2, Inertial_Station.gyro_q3, Inertial_Station.gyro_q4);
             break;
         case CAN_BEZIER_CP1_X:
