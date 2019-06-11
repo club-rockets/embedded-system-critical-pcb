@@ -4,8 +4,13 @@
   * Description        : This file provides code for the configuration
   *                      of the SDIO instances.
   ******************************************************************************
+  * This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -105,8 +110,8 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     GPIO_InitStruct.Alternate = GPIO_AF12_SDIO;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    /* Peripheral DMA init*/
-  
+    /* SDIO DMA Init */
+    /* SDIO Init */
     hdma_sdio.Instance = DMA2_Stream3;
     hdma_sdio.Init.Channel = DMA_CHANNEL_4;
     hdma_sdio.Init.Direction = DMA_PERIPH_TO_MEMORY;
@@ -122,7 +127,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* sdHandle)
     hdma_sdio.Init.PeriphBurst = DMA_PBURST_INC4;
     if (HAL_DMA_Init(&hdma_sdio) != HAL_OK)
     {
-      Error_Handler();
+      _Error_Handler(__FILE__, __LINE__);
     }
 
     /* Several peripheral DMA handle pointers point to the same DMA handle.
@@ -162,17 +167,16 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef* sdHandle)
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
 
-    /* Peripheral DMA DeInit*/
+    /* SDIO DMA DeInit */
     HAL_DMA_DeInit(sdHandle->hdmarx);
     HAL_DMA_DeInit(sdHandle->hdmatx);
 
-    /* Peripheral interrupt Deinit*/
+    /* SDIO interrupt Deinit */
     HAL_NVIC_DisableIRQ(SDIO_IRQn);
-
-  }
   /* USER CODE BEGIN SDIO_MspDeInit 1 */
 
   /* USER CODE END SDIO_MspDeInit 1 */
+  }
 } 
 
 /* USER CODE BEGIN 1 */

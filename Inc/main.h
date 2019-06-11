@@ -3,8 +3,13 @@
   * File Name          : main.h
   * Description        : This file contains the common defines of the application
   ******************************************************************************
+  * This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -44,6 +49,7 @@
 #ifndef __MAIN_H
 #define __MAIN_H
   /* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -135,6 +141,7 @@
 #define NOT_USED_PD1_GPIO_Port GPIOD
 #define MicroSDCard_Detect_Pin GPIO_PIN_3
 #define MicroSDCard_Detect_GPIO_Port GPIOD
+#define MicroSDCard_Detect_EXTI_IRQn EXTI3_IRQn
 #define NOT_USED_PD4_Pin GPIO_PIN_4
 #define NOT_USED_PD4_GPIO_Port GPIOD
 #define SENSE_EVENT_B_Pin GPIO_PIN_5
@@ -163,6 +170,10 @@
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
+
+void _Error_Handler(char *, int);
+
+#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
 
 /**
   * @}

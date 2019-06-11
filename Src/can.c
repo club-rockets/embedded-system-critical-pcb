@@ -4,8 +4,13 @@
   * Description        : This file provides code for the configuration
   *                      of the CAN instances.
   ******************************************************************************
+  * This notice applies to any and all portions of this file
+  * that are not between comment pairs USER CODE BEGIN and
+  * USER CODE END. Other portions of this file, whether 
+  * inserted by the user or by software development tools
+  * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2017 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -58,10 +63,10 @@ void MX_CAN2_Init(void)
 {
 
   hcan2.Instance = CAN2;
-  hcan2.Init.Prescaler = 3;
+  hcan2.Init.Prescaler = 6;
   hcan2.Init.Mode = CAN_MODE_NORMAL;
   hcan2.Init.SJW = CAN_SJW_1TQ;
-  hcan2.Init.BS1 = CAN_BS1_13TQ;
+  hcan2.Init.BS1 = CAN_BS1_11TQ;
   hcan2.Init.BS2 = CAN_BS2_2TQ;
   hcan2.Init.TTCM = DISABLE;
   hcan2.Init.ABOM = DISABLE;
@@ -71,7 +76,7 @@ void MX_CAN2_Init(void)
   hcan2.Init.TXFP = DISABLE;
   if (HAL_CAN_Init(&hcan2) != HAL_OK)
   {
-    Error_Handler();
+    _Error_Handler(__FILE__, __LINE__);
   }
 
 }
@@ -124,15 +129,13 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_13);
 
-    /* Peripheral interrupt Deinit*/
+    /* CAN2 interrupt Deinit */
     HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
-
     HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
-
-  }
   /* USER CODE BEGIN CAN2_MspDeInit 1 */
 
   /* USER CODE END CAN2_MspDeInit 1 */
+  }
 } 
 
 /* USER CODE BEGIN 1 */
