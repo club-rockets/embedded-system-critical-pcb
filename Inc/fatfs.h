@@ -45,7 +45,7 @@
 #ifndef __fatfs_H
 #define __fatfs_H
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 #include "ff.h"
@@ -53,7 +53,7 @@
 #include "sd_diskio.h" /* defines SD_Driver as external */
 
 /* USER CODE BEGIN Includes */
-
+#include <stdint.h>
 /* USER CODE END Includes */
 
 extern uint8_t retSD; /* Return value for SD */
